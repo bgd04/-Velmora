@@ -7,6 +7,18 @@ const logoutAdmin = document.getElementById("logoutAdmin");
 const reservationsTable = document.getElementById("reservationsTable");
 const clearReservations = document.getElementById("clearReservations");
 
+const deleteModal = document.getElementById("deleteModal");
+const cancelDelete = document.getElementById("cancelDelete");
+const confirmDelete = document.getElementById("confirmDelete");
+
+let reservationToDelete = null;
+
+const statusLabels = {
+    pending: "În așteptare",
+    confirmed: "Confirmată",
+    cancelled: "Anulată"
+};
+
 function isAdminLoggedIn() {
     return localStorage.getItem("velmora_admin_logged") === "true";
 }
@@ -114,7 +126,9 @@ async function displayReservations() {
                         <th>Data</th>
                         <th>Ora</th>
                         <th>Persoane</th>
+                        <th>Status</th>
                         <th>Cereri</th>
+                        <th>Acțiuni</th>
                         <th>Trimisă la</th>
                     </tr>
                 </thead>
@@ -130,7 +144,35 @@ async function displayReservations() {
                     <td>${formatDate(reservation.reservation_date)}</td>
                     <td>${reservation.reservation_time}</td>
                     <td>${reservation.guests}</td>
+
+                    <td>
+                        <span class="status-badge status-${reservation.status}">
+                            ${statusLabels[reservation.status] || reservation.status}
+                        </span>
+                    </td>
+
                     <td>${reservation.message || "-"}</td>
+
+                    <td>
+                        <button
+                            class="status-btn status-btn-confirm"
+                            onclick="updateReservationStatus(${reservation.id}, 'confirmed')">
+                            Confirmă
+                        </button>
+
+                        <button
+                            class="status-btn status-btn-cancel"
+                            onclick="updateReservationStatus(${reservation.id}, 'cancelled')">
+                            Anulează
+                        </button>
+
+                        <button
+                            class="delete-btn"
+                            onclick="deleteReservation(${reservation.id})">
+                            Șterge
+                        </button>
+                    </td>
+
                     <td>${formatDateTime(reservation.created_at)}</td>
                 </tr>
             `;
@@ -145,9 +187,37 @@ async function displayReservations() {
 
     } catch (error) {
         console.error(error);
+
         reservationsTable.innerHTML = `
             <p class="empty-message">Eroare la încărcarea rezervărilor.</p>
         `;
+    }
+}
+
+async function updateReservationStatus(id, status) {
+    try {
+        const response = await fetch(
+            `/api/reservations/${id}/status`,
+            {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    status
+                })
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error();
+        }
+
+        displayReservations();
+
+    } catch (error) {
+        console.error(error);
+        alert("Nu s-a putut actualiza statusul.");
     }
 }
 
@@ -164,6 +234,45 @@ if (clearReservations) {
         });
 
         displayReservations();
+    });
+}
+
+function deleteReservation(id) {
+    reservationToDelete = id;
+    deleteModal.classList.remove("hidden");
+}
+
+if (cancelDelete) {
+    cancelDelete.addEventListener("click", function() {
+        reservationToDelete = null;
+        deleteModal.classList.add("hidden");
+    });
+}
+
+if (confirmDelete) {
+    confirmDelete.addEventListener("click", async function() {
+        if (!reservationToDelete) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/reservations/${reservationToDelete}`, {
+                method: "DELETE"
+            });
+
+            if (!response.ok) {
+                throw new Error();
+            }
+
+            reservationToDelete = null;
+            deleteModal.classList.add("hidden");
+
+            displayReservations();
+
+        } catch (error) {
+            console.error(error);
+            alert("Nu s-a putut șterge rezervarea.");
+        }
     });
 }
 

@@ -69,6 +69,7 @@ app.get("/api/reservations", (req, res) => {
             reservation_time,
             guests,
             message,
+            status,
             created_at
         FROM reservations
         ORDER BY created_at DESC
@@ -126,6 +127,54 @@ app.post("/api/admin/login", (req, res) => {
                 id: results[0].id,
                 username: results[0].username
             }
+        });
+    });
+});
+
+app.patch("/api/reservations/:id/status", (req, res) => {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    const allowedStatuses = ["pending", "confirmed", "cancelled"];
+
+    if (!allowedStatuses.includes(status)) {
+        return res.status(400).json({
+            message: "Status invalid."
+        });
+    }
+
+    const sql = "UPDATE reservations SET status = ? WHERE id = ?";
+
+    db.query(sql, [status, id], (error, result) => {
+        if (error) {
+            console.error(error);
+            return res.status(500).json({
+                message: "Eroare la actualizarea statusului."
+            });
+        }
+
+        res.json({
+            message: "Statusul rezervării a fost actualizat."
+        });
+    });
+});
+
+app.delete("/api/reservations/:id", (req, res) => {
+    const { id } = req.params;
+
+    const sql = "DELETE FROM reservations WHERE id = ?";
+
+    db.query(sql, [id], (error) => {
+        if (error) {
+            console.error(error);
+
+            return res.status(500).json({
+                message: "Eroare la ștergerea rezervării."
+            });
+        }
+
+        res.json({
+            message: "Rezervarea a fost ștearsă."
         });
     });
 });

@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS reservations (
     reservation_time TIME NOT NULL,
     guests VARCHAR(20) NOT NULL,
     message TEXT,
+    status ENUM('pending', 'confirmed', 'cancelled') DEFAULT 'pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

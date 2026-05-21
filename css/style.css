@@ -311,21 +311,36 @@ a {
 /* SUCCESS SCREEN */
 
 .reservation-success {
-    position: absolute;
+    position: fixed;
     inset: 0;
-    background:
-        linear-gradient(rgba(0,0,0,0.88), rgba(0,0,0,0.92)),
-        url("../images/reservation.jpg");
-    background-size: cover;
-    background-position: center;
+    width: 100%;
+    height: 100vh;
+    background: #050505;
+    z-index: 99999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.4s ease;
+}
+
+.reservation-success::before {
+    content: "Velmora";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 96px;
+
     display: flex;
     justify-content: center;
     align-items: center;
-    text-align: center;
-    opacity: 0;
-    visibility: hidden;
-    transition: 0.5s;
-    z-index: 20;
+
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    color: #C9A66B;
+    letter-spacing: 2px;
+
+    background: rgba(15, 15, 15, 0.95);
+    border-bottom: 1px solid rgba(201, 166, 107, 0.2);
 }
 
 .reservation-success.active {
@@ -334,22 +349,59 @@ a {
 }
 
 .success-content {
-    max-width: 700px;
-    padding: 40px;
+    width: 100%;
+    height: 100vh;
+    padding: 40px 8%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.success-content::before {
+    content: "✓";
+    width: 78px;
+    height: 78px;
+    border: 1px solid rgba(201,166,107,0.6);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #C9A66B;
+    font-size: 34px;
+    margin-bottom: 32px;
 }
 
 .success-content h2 {
     font-family: 'Playfair Display', serif;
-    font-size: 58px;
-    margin-bottom: 25px;
+    font-size: 68px;
+    line-height: 1.1;
     color: #FFFFFF;
+    margin-bottom: 24px;
 }
 
 .success-content p {
-    color: #BFBFBF;
+    max-width: 680px;
+    color: #CFCFCF;
     font-size: 18px;
-    margin-bottom: 35px;
     line-height: 1.8;
+    margin-bottom: 38px;
+}
+
+@media (max-width: 768px) {
+    .reservation-success::before {
+        left: 6%;
+        font-size: 28px;
+    }
+
+    .success-content h2 {
+        font-size: 44px;
+    }
+
+    .success-content p {
+        font-size: 16px;
+    }
 }
 
 /* ABOUT PAGE */
@@ -567,4 +619,146 @@ a {
 .admin-panel-header h2 {
     font-family: 'Playfair Display', serif;
     font-size: 36px;
+}
+
+/* STATUS REZERVARI */
+
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.status-pending {
+    background: #b8860b;
+    color: white;
+}
+
+.status-confirmed {
+    background: #228b22;
+    color: white;
+}
+
+.status-cancelled {
+    background: #b22222;
+    color: white;
+}
+
+.status-completed {
+    background: #444;
+    color: white;
+}
+
+.status-btn {
+    margin: 2px;
+
+    padding: 8px 18px;
+
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+
+    cursor: pointer;
+
+    background: transparent;
+
+    transition: all 0.3s ease;
+}
+
+.status-btn-confirm {
+    border: 1px solid #228b22;
+    color: #7dff7d;
+}
+
+.status-btn-confirm:hover {
+    background: #228b22;
+    color: #ffffff;
+}
+
+.status-btn-cancel {
+    border: 1px solid #b22222;
+    color: #ff9a9a;
+}
+
+.status-btn-cancel:hover {
+    background: #b22222;
+    color: #ffffff;
+}
+
+/* VERIFY QUESTION ADMIN */
+
+.confirm-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.78);
+    backdrop-filter: blur(8px);
+    z-index: 100000;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 30px;
+}
+
+.confirm-modal-box {
+    width: 100%;
+    max-width: 520px;
+
+    background: #111111;
+    border: 1px solid rgba(201, 166, 107, 0.35);
+
+    padding: 45px;
+    text-align: center;
+
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+}
+
+.confirm-modal-box h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px;
+    color: #FFFFFF;
+    margin-bottom: 18px;
+}
+
+.confirm-modal-box p {
+    color: #CFCFCF;
+    font-size: 16px;
+    line-height: 1.7;
+    margin-bottom: 30px;
+}
+
+.confirm-modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.delete-confirm-btn {
+    background: #b22222;
+    border-color: #b22222;
+    color: #ffffff;
+}
+
+.delete-confirm-btn:hover {
+    background: transparent;
+    color: #ff9a9a;
+}
+
+.delete-btn {
+    margin: 2px;
+    padding: 5px 11px;
+    font-size: 12px;
+    cursor: pointer;
+    border: 1px solid #b8860b;
+    background: transparent;
+    color: #ffd76a;
+    transition: 0.3s;
+}
+
+.delete-btn:hover {
+    background: #b8860b;
+    color: #ffffff;
 }
