@@ -11,20 +11,44 @@
 
 <header class="header">
     <a href="index.html" class="logo">Velmora</a>
+
     <nav class="navbar">
-    <a href="index.html">Site public</a>
-    <a href="admin.html">Rezervări</a>
-</nav>
+        <a href="index.html">Site public</a>
+    </nav>
 </header>
 
 <section class="page-hero">
     <p class="section-subtitle">Administrare</p>
-    <h1>Rezervări primite</h1>
+    <h1>Panou administrativ</h1>
 </section>
 
-<section class="admin-section">
+<section class="admin-login-section" id="adminLoginSection">
+    <form class="admin-login-form" id="adminLoginForm">
+        <h2>Autentificare admin</h2>
+
+        <input type="text" name="username" placeholder="Username" required>
+
+        <input type="password" name="password" placeholder="Parolă" required>
+
+        <button type="submit" class="btn btn-primary">Autentificare</button>
+
+        <p class="login-error" id="loginError"></p>
+    </form>
+</section>
+
+<section class="admin-section hidden" id="adminPanel">
+    <div class="admin-panel-header">
+        <h2>Rezervări primite</h2>
+
+        <button class="btn btn-secondary" id="logoutAdmin">
+            Logout
+        </button>
+    </div>
+
     <div class="admin-actions">
-        <button class="btn btn-primary" id="clearReservations">Șterge toate rezervările</button>
+        <button class="btn btn-primary" id="clearReservations">
+            Șterge toate rezervările
+        </button>
     </div>
 
     <div class="reservations-table" id="reservationsTable"></div>

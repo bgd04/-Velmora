@@ -101,6 +101,35 @@ app.delete("/api/reservations", (req, res) => {
     });
 });
 
+app.post("/api/admin/login", (req, res) => {
+    const { username, password } = req.body;
+
+    const sql = "SELECT * FROM admins WHERE username = ? AND password = ?";
+
+    db.query(sql, [username, password], (error, results) => {
+        if (error) {
+            console.error(error);
+            return res.status(500).json({
+                message: "Eroare la autentificare."
+            });
+        }
+
+        if (results.length === 0) {
+            return res.status(401).json({
+                message: "Date de autentificare incorecte."
+            });
+        }
+
+        res.json({
+            message: "Autentificare reușită.",
+            admin: {
+                id: results[0].id,
+                username: results[0].username
+            }
+        });
+    });
+});
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {

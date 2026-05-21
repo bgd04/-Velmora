@@ -6,7 +6,8 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     env_file:
       - backend/.env
 
@@ -22,6 +23,11 @@ services:
     volumes:
       - velmora_mysql_data:/var/lib/mysql
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
@@ -33,7 +39,8 @@ services:
       PMA_HOST: db
       MYSQL_ROOT_PASSWORD: root
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
 volumes:
   velmora_mysql_data:
