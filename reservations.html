@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rezervări | Velmora</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="header">
+    <a href="index.html" class="logo">Velmora</a>
+    <nav class="navbar">
+        <a href="index.html">Acasă</a>
+        <a href="menu.html">Meniu</a>
+        <a href="about.html">Despre</a>
+        <a href="reservations.html">Rezervări</a>
+        <a href="contact.html">Contact</a>
+    </nav>
+</header>
+
+<section class="page-hero">
+    <p class="section-subtitle">Velmora</p>
+    <h1>Rezervă o masă</h1>
+</section>
+
+<section class="reservation-section">
+    <div class="reservation-container">
+        <div class="reservation-success" id="reservationSuccess">
+            <div class="success-content">
+                <h2>Rezervarea a fost trimisă</h2>
+                <p>
+                    Vă mulțumim pentru alegerea Velmora.<br>
+                    Echipa noastră vă va contacta pentru confirmare.
+                </p>
+                <a href="index.html" class="btn btn-primary">Înapoi la homepage</a>
+            </div>
+        </div>
+
+        <div class="reservation-info">
+            <p class="section-subtitle">Experiență Premium</p>
+            <h2>Transformă o seară obișnuită într-o experiență memorabilă</h2>
+            <p>
+                Completează formularul pentru a rezerva o masă la Velmora.
+                Echipa noastră va pregăti fiecare detaliu pentru o experiență culinară desăvârșită.
+            </p>
+        </div>
+
+        <form class="reservation-form" id="reservationForm">
+            <input type="text" name="name" placeholder="Nume complet" required>
+            <input type="email" name="email" placeholder="Adresă de email" required>
+            <input type="tel" name="phone" placeholder="Număr de telefon" required>
+
+            <div class="form-row">
+                <input type="date" name="date" required>
+                <input type="time" name="time" required>
+            </div>
+
+            <select name="guests" required>
+                <option value="">Număr persoane</option>
+                <option>1 persoană</option>
+                <option>2 persoane</option>
+                <option>3 persoane</option>
+                <option>4 persoane</option>
+                <option>5 persoane</option>
+                <option>6+ persoane</option>
+            </select>
+
+            <textarea name="message" rows="5" placeholder="Cereri speciale"></textarea>
+
+            <button type="submit" class="btn btn-primary">Confirmă rezervarea</button>
+        </form>
+    </div>
+</section>
+
+<footer class="footer">
+    <p>&copy; 2026 Velmora. Toate drepturile rezervate.</p>
+</footer>
+
+<script src="js/script.js"></script>
+</body>
+</html>
