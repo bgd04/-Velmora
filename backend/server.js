@@ -125,7 +125,8 @@ app.post("/api/admin/login", (req, res) => {
             message: "Autentificare reușită.",
             admin: {
                 id: results[0].id,
-                username: results[0].username
+                username: results[0].username,
+                role: results[0].role
             }
         });
     });
@@ -177,6 +178,88 @@ app.delete("/api/reservations/:id", (req, res) => {
             message: "Rezervarea a fost ștearsă."
         });
     });
+});
+
+app.get("/api/menu", (req, res) => {
+
+    const sql =
+        "SELECT * FROM menu_items ORDER BY category, id";
+
+    db.query(sql, (error, results) => {
+
+        if (error) {
+
+            console.error(error);
+
+            return res.status(500).json({
+                message: "Eroare la citirea meniului."
+            });
+        }
+
+        res.json(results);
+    });
+});
+
+app.post("/api/menu", (req, res) => {
+
+    const {
+        category,
+        name,
+        description,
+        price
+    } = req.body;
+
+    if (
+        !category ||
+        !name ||
+        !description ||
+        !price
+    ) {
+
+        return res.status(400).json({
+            message:
+                "Toate câmpurile sunt obligatorii."
+        });
+    }
+
+    const sql = `
+        INSERT INTO menu_items
+        (
+            category,
+            name,
+            description,
+            price
+        )
+        VALUES (?, ?, ?, ?)
+    `;
+
+    db.query(
+        sql,
+        [
+            category,
+            name,
+            description,
+            price
+        ],
+        (error, result) => {
+
+            if (error) {
+
+                console.error(error);
+
+                return res.status(500).json({
+                    message:
+                        "Eroare la adăugarea preparatului."
+                });
+            }
+
+            res.status(201).json({
+                message:
+                    "Preparatul a fost adăugat.",
+                id: result.insertId
+            });
+        }
+    );
 });
 
 const PORT = process.env.PORT || 3000;

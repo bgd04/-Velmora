@@ -6,6 +6,8 @@ const logoutAdmin = document.getElementById("logoutAdmin");
 
 const reservationsTable = document.getElementById("reservationsTable");
 const clearReservations = document.getElementById("clearReservations");
+const menuItemForm = document.getElementById("menuItemForm");
+const menuItemsTable = document.getElementById("menuItemsTable");
 
 const deleteModal = document.getElementById("deleteModal");
 const cancelDelete = document.getElementById("cancelDelete");
@@ -19,6 +21,26 @@ const statusLabels = {
     cancelled: "Anulată"
 };
 
+function getAdminRole() {
+    return localStorage.getItem("velmora_admin_role");
+}
+
+function applyRolePermissions() {
+
+    const menuAdminSection =
+        document.getElementById("menuAdminSection");
+
+    if (!menuAdminSection) {
+        return;
+    }
+
+    if (getAdminRole() === "manager") {
+        menuAdminSection.classList.add("hidden");
+    } else {
+        menuAdminSection.classList.remove("hidden");
+    }
+}
+
 function isAdminLoggedIn() {
     return localStorage.getItem("velmora_admin_logged") === "true";
 }
@@ -26,7 +48,9 @@ function isAdminLoggedIn() {
 function showAdminPanel() {
     adminLoginSection.classList.add("hidden");
     adminPanel.classList.remove("hidden");
+    applyRolePermissions();
     displayReservations();
+    displayMenuItems();
 }
 
 function showLoginForm() {
@@ -69,6 +93,7 @@ if (adminLoginForm) {
 
             localStorage.setItem("velmora_admin_logged", "true");
             localStorage.setItem("velmora_admin_username", data.admin.username);
+            localStorage.setItem("velmora_admin_role",data.admin.role);
 
             loginError.textContent = "";
             adminLoginForm.reset();
@@ -86,6 +111,7 @@ if (logoutAdmin) {
     logoutAdmin.addEventListener("click", function() {
         localStorage.removeItem("velmora_admin_logged");
         localStorage.removeItem("velmora_admin_username");
+        localStorage.removeItem("velmora_admin_role");
         showLoginForm();
     });
 }
@@ -274,6 +300,130 @@ if (confirmDelete) {
             alert("Nu s-a putut șterge rezervarea.");
         }
     });
+}
+
+async function displayMenuItems() {
+
+    try {
+
+        const response = await fetch("/api/menu");
+
+        const items = await response.json();
+
+        if (!Array.isArray(items) || items.length === 0) {
+
+            menuItemsTable.innerHTML = `
+                <p class="empty-message">
+                    Nu există preparate în meniu.
+                </p>
+            `;
+
+            return;
+        }
+
+        let html = `
+            <table>
+                <thead>
+                    <tr>
+                        <th>Categorie</th>
+                        <th>Nume</th>
+                        <th>Descriere</th>
+                        <th>Preț</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        items.forEach(item => {
+
+            html += `
+                <tr>
+                    <td>${item.category}</td>
+                    <td>${item.name}</td>
+                    <td>${item.description}</td>
+                    <td>${item.price} Lei</td>
+                </tr>
+            `;
+        });
+
+        html += `
+                </tbody>
+            </table>
+        `;
+
+        menuItemsTable.innerHTML = html;
+
+    } catch (error) {
+
+        console.error(error);
+
+        menuItemsTable.innerHTML = `
+            <p class="empty-message">
+                Eroare la încărcarea meniului.
+            </p>
+        `;
+    }
+}
+
+if (menuItemForm) {
+
+    menuItemForm.addEventListener(
+        "submit",
+        async function(event) {
+
+            event.preventDefault();
+
+            const formData =
+                new FormData(menuItemForm);
+
+            const itemData = {
+                category:
+                    formData.get("category"),
+
+                name:
+                    formData.get("name"),
+
+                description:
+                    formData.get("description"),
+
+                price:
+                    formData.get("price")
+            };
+
+            try {
+
+                const response =
+                    await fetch("/api/menu", {
+
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body:
+                            JSON.stringify(itemData)
+                    });
+
+                if (!response.ok) {
+                    throw new Error();
+                }
+
+                menuItemForm.reset();
+
+                displayMenuItems();
+
+            } catch (error) {
+
+                console.error(error);
+
+                alert(
+                    "Nu s-a putut adăuga preparatul."
+                );
+            }
+        }
+    );
 }
 
 setInterval(displayReservations, 3000);

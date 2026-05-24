@@ -52,6 +52,73 @@
     </div>
 
     <div class="reservations-table" id="reservationsTable"></div>
+
+    <div id="menuAdminSection" class="menu-admin-section">
+
+        <div class="admin-panel-header">
+            <h2>Gestionare meniu</h2>
+        </div>
+
+        <form id="menuItemForm" class="menu-admin-form">
+
+            <div class="form-group">
+                <label>Categorie</label>
+
+                <select name="category" required>
+                    <option value="">Selectează</option>
+                    <option value="Startere">Startere</option>
+                    <option value="Fel principal">Fel principal</option>
+                    <option value="Desert">Desert</option>
+                    <option value="Vinuri">Vinuri</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Nume preparat</label>
+
+                <input
+                    type="text"
+                    name="name"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label>Descriere</label>
+
+                <textarea
+                    name="description"
+                    rows="4"
+                    required
+                ></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Preț</label>
+
+                <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    name="price"
+                    required
+                >
+            </div>
+
+            <button
+                type="submit"
+                class="btn btn-primary">
+                Adaugă preparat
+            </button>
+
+        </form>
+
+        <div
+            id="menuItemsTable"
+            class="menu-items-table">
+        </div>
+
+    </div>
 </section>
 
 <footer class="footer">

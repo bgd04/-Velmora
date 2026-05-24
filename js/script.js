@@ -38,3 +38,74 @@ if (reservationForm && reservationSuccess) {
         }
     });
 }
+
+const publicMenuContainer = document.getElementById("publicMenuContainer");
+
+if (publicMenuContainer) {
+    loadPublicMenu();
+}
+
+async function loadPublicMenu() {
+    try {
+        const response = await fetch("/api/menu");
+        const items = await response.json();
+
+        if (!Array.isArray(items) || items.length === 0) {
+            publicMenuContainer.innerHTML = `
+                <p class="empty-message">
+                    Meniul nu conține preparate momentan.
+                </p>
+            `;
+            return;
+        }
+
+        const groupedItems = {};
+
+        items.forEach(item => {
+            if (!groupedItems[item.category]) {
+                groupedItems[item.category] = [];
+            }
+
+            groupedItems[item.category].push(item);
+        });
+
+        let html = "";
+
+        Object.keys(groupedItems).forEach(category => {
+            html += `
+                <div class="menu-category">
+                    <h2>${category}</h2>
+            `;
+
+            groupedItems[category].forEach(item => {
+                html += `
+                    <div class="menu-item">
+                        <div>
+                            <h3>${item.name}</h3>
+                            <p>${item.description}</p>
+                        </div>
+
+                        <span>
+                            ${Number(item.price).toFixed(2)} RON
+                        </span>
+                    </div>
+                `;
+            });
+
+            html += `
+                </div>
+            `;
+        });
+
+        publicMenuContainer.innerHTML = html;
+
+    } catch (error) {
+        console.error(error);
+
+        publicMenuContainer.innerHTML = `
+            <p class="empty-message">
+                Eroare la încărcarea meniului.
+            </p>
+        `;
+    }
+}

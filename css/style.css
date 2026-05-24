@@ -762,3 +762,102 @@ a {
     background: #b8860b;
     color: #ffffff;
 }
+
+.menu-admin-section {
+    margin-top: 80px;
+    padding-top: 50px;
+    border-top: 1px solid rgba(201, 166, 107, 0.25);
+}
+
+.menu-admin-form {
+    margin: 35px 0 50px;
+    padding: 35px;
+    background: #141414;
+    border: 1px solid rgba(201, 166, 107, 0.25);
+
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+.menu-admin-form .form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.menu-admin-form .form-group:nth-child(3) {
+    grid-column: span 2;
+}
+
+.menu-admin-form label {
+    margin-bottom: 10px;
+    color: #C9A66B;
+    font-size: 13px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.menu-admin-form input,
+.menu-admin-form select,
+.menu-admin-form textarea {
+    width: 100%;
+    padding: 15px 16px;
+    background: #181818;
+    border: 1px solid rgba(201, 166, 107, 0.25);
+    color: #FFFFFF;
+    font-size: 15px;
+    outline: none;
+}
+
+.menu-admin-form input:focus,
+.menu-admin-form select:focus,
+.menu-admin-form textarea:focus {
+    border-color: #C9A66B;
+}
+
+.menu-admin-form textarea {
+    resize: vertical;
+    min-height: 110px;
+}
+
+.menu-admin-form button {
+    width: fit-content;
+    align-self: end;
+}
+
+.menu-items-table {
+    overflow-x: auto;
+}
+
+.menu-items-table table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #141414;
+}
+
+.menu-items-table th,
+.menu-items-table td {
+    padding: 18px;
+    border-bottom: 1px solid rgba(201, 166, 107, 0.25);
+    text-align: left;
+    color: #BFBFBF;
+}
+
+.menu-items-table th {
+    color: #C9A66B;
+}
+
+.menu-items-table td:nth-child(2) {
+    color: #FFFFFF;
+    font-weight: 600;
+}
+
+@media (max-width: 768px) {
+    .menu-admin-form {
+        grid-template-columns: 1fr;
+    }
+
+    .menu-admin-form .form-group:nth-child(3) {
+        grid-column: span 1;
+    }
+}
