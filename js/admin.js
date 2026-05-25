@@ -143,70 +143,96 @@ async function displayReservations() {
         }
 
         let html = `
-            <table>
-                <thead>
-                    <tr>
-                        <th>Nume</th>
-                        <th>Email</th>
-                        <th>Telefon</th>
-                        <th>Data</th>
-                        <th>Ora</th>
-                        <th>Persoane</th>
-                        <th>Status</th>
-                        <th>Cereri</th>
-                        <th>Acțiuni</th>
-                        <th>Trimisă la</th>
-                    </tr>
-                </thead>
-                <tbody>
+            <div class="reservation-cards">
         `;
 
         reservations.forEach(reservation => {
-            html += `
-                <tr>
-                    <td>${reservation.name}</td>
-                    <td>${reservation.email}</td>
-                    <td>${reservation.phone}</td>
-                    <td>${formatDate(reservation.reservation_date)}</td>
-                    <td>${reservation.reservation_time}</td>
-                    <td>${reservation.guests}</td>
+            let actionButtons = `
+                <div class="reservation-status-actions">
+            `;
 
-                    <td>
+            if (reservation.status === "pending") {
+
+                actionButtons += `
+
+                    <button
+                        class="status-btn status-btn-confirm"
+                        onclick="updateReservationStatus(${reservation.id}, 'confirmed')">
+                        Confirmă
+                    </button>
+
+                    <button
+                        class="status-btn status-btn-cancel"
+                        onclick="updateReservationStatus(${reservation.id}, 'cancelled')">
+                        Anulează
+                    </button>
+
+                `;
+            }
+
+            actionButtons += `
+                </div>
+            `;
+
+            html += `
+                <div class="reservation-card">
+
+                    <div class="reservation-card-header">
+                        <div>
+                            <h3>${reservation.name}</h3>
+                            <p>${reservation.email}</p>
+                        </div>
+
                         <span class="status-badge status-${reservation.status}">
                             ${statusLabels[reservation.status] || reservation.status}
                         </span>
-                    </td>
+                    </div>
 
-                    <td>${reservation.message || "-"}</td>
+                    <div class="reservation-card-details">
+                        <div>
+                            <span>Telefon</span>
+                            <strong>${reservation.phone}</strong>
+                        </div>
 
-                    <td>
+                        <div>
+                            <span>Data</span>
+                            <strong>${formatDate(reservation.reservation_date)}</strong>
+                        </div>
+
+                        <div>
+                            <span>Ora</span>
+                            <strong>${reservation.reservation_time}</strong>
+                        </div>
+
+                        <div>
+                            <span>Persoane</span>
+                            <strong>${reservation.guests}</strong>
+                        </div>
+                    </div>
+
+                    <div class="reservation-card-message">
+                        <span>Cereri speciale</span>
+                        <p>${reservation.message || "Nu există cereri speciale."}</p>
+                    </div>
+
+                    <div class="reservation-card-footer">
+                        <small>Primită la: ${formatDateTime(reservation.created_at)}</small>
+
+                        ${actionButtons}
+
                         <button
-                            class="status-btn status-btn-confirm"
-                            onclick="updateReservationStatus(${reservation.id}, 'confirmed')">
-                            Confirmă
-                        </button>
-
-                        <button
-                            class="status-btn status-btn-cancel"
-                            onclick="updateReservationStatus(${reservation.id}, 'cancelled')">
-                            Anulează
-                        </button>
-
-                        <button
-                            class="delete-btn"
+                            class="delete-btn reservation-delete-action"
                             onclick="deleteReservation(${reservation.id})">
                             Șterge
                         </button>
-                    </td>
+                    </div>
 
-                    <td>${formatDateTime(reservation.created_at)}</td>
-                </tr>
+                </div>
             `;
         });
 
         html += `
-                </tbody>
-            </table>
+            </div>
         `;
 
         reservationsTable.innerHTML = html;
