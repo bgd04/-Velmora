@@ -9,17 +9,48 @@ const clearReservations = document.getElementById("clearReservations");
 const menuItemForm = document.getElementById("menuItemForm");
 const menuItemsTable = document.getElementById("menuItemsTable");
 
+const menuSubmitButton =document.getElementById("menuSubmitButton");
+const cancelMenuEdit =document.getElementById("cancelMenuEdit");
+
+const menuSearchInput = document.getElementById("menuSearchInput");
+const menuCategoryFilter = document.getElementById("menuCategoryFilter");
+const menuFeedback = document.getElementById("menuFeedback");
+
+let menuItemsCache = [];
+
 const deleteModal = document.getElementById("deleteModal");
 const cancelDelete = document.getElementById("cancelDelete");
 const confirmDelete = document.getElementById("confirmDelete");
 
+const deleteMenuModal = document.getElementById("deleteMenuModal");
+const cancelMenuDelete = document.getElementById("cancelMenuDelete");
+const confirmMenuDelete = document.getElementById("confirmMenuDelete");
+
+let menuItemToDelete = null;
+
 let reservationToDelete = null;
+let menuItemToEdit = null;
 
 const statusLabels = {
     pending: "În așteptare",
     confirmed: "Confirmată",
     cancelled: "Anulată"
 };
+
+function showMenuFeedback(message) {
+
+    if (!menuFeedback) {
+        return;
+    }
+
+    menuFeedback.textContent = message;
+
+    menuFeedback.classList.remove("hidden");
+
+    setTimeout(() => {
+        menuFeedback.classList.add("hidden");
+    }, 3000);
+}
 
 function getAdminRole() {
     return localStorage.getItem("velmora_admin_role");
@@ -336,48 +367,13 @@ async function displayMenuItems() {
 
         const items = await response.json();
 
-        if (!Array.isArray(items) || items.length === 0) {
+        menuItemsCache = Array.isArray(items)
+            ? items
+            : [];
 
-            menuItemsTable.innerHTML = `
-                <p class="empty-message">
-                    Nu există preparate în meniu.
-                </p>
-            `;
+        updateMenuCategoryFilter();
 
-            return;
-        }
-
-        let html = `
-            <table>
-                <thead>
-                    <tr>
-                        <th>Categorie</th>
-                        <th>Nume</th>
-                        <th>Descriere</th>
-                        <th>Preț</th>
-                    </tr>
-                </thead>
-                <tbody>
-        `;
-
-        items.forEach(item => {
-
-            html += `
-                <tr>
-                    <td>${item.category}</td>
-                    <td>${item.name}</td>
-                    <td>${item.description}</td>
-                    <td>${item.price} Lei</td>
-                </tr>
-            `;
-        });
-
-        html += `
-                </tbody>
-            </table>
-        `;
-
-        menuItemsTable.innerHTML = html;
+        renderMenuItems();
 
     } catch (error) {
 
@@ -389,6 +385,161 @@ async function displayMenuItems() {
             </p>
         `;
     }
+}
+
+function renderMenuItems() {
+
+    let items = [...menuItemsCache];
+
+    const searchValue = menuSearchInput
+        ? menuSearchInput.value.toLowerCase().trim()
+        : "";
+
+    const selectedCategory = menuCategoryFilter
+        ? menuCategoryFilter.value
+        : "all";
+
+    if (selectedCategory !== "all") {
+        items = items.filter(item =>
+            item.category === selectedCategory
+        );
+    }
+
+    if (searchValue) {
+        items = items.filter(item =>
+            item.name.toLowerCase().includes(searchValue) ||
+            item.description.toLowerCase().includes(searchValue) ||
+            item.category.toLowerCase().includes(searchValue)
+        );
+    }
+
+    if (!Array.isArray(items) || items.length === 0) {
+
+        menuItemsTable.innerHTML = `
+            <p class="empty-message">
+                Nu există preparate pentru filtrul selectat.
+            </p>
+        `;
+
+        return;
+    }
+
+    let html = `
+        <table>
+            <thead>
+                <tr>
+                    <th>Categorie</th>
+                    <th>Nume</th>
+                    <th>Descriere</th>
+                    <th>Preț</th>
+                    <th>Acțiuni</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+    items.forEach(item => {
+
+        const safeCategory =
+            String(item.category).replace(/'/g, "\\'");
+
+        const safeName =
+            String(item.name).replace(/'/g, "\\'");
+
+        const safeDescription =
+            String(item.description).replace(/'/g, "\\'");
+
+        const safePrice =
+            String(item.price).replace(/'/g, "\\'");
+
+        html += `
+            <tr>
+                <td>${item.category}</td>
+                <td>${item.name}</td>
+                <td>${item.description}</td>
+                <td>${Number(item.price).toFixed(2)} Lei</td>
+
+                <td>
+                    <button
+                        class="status-btn status-btn-confirm"
+                        onclick="editMenuItem(${item.id}, '${safeCategory}', '${safeName}', '${safeDescription}', '${safePrice}')">
+                        Editează
+                    </button>
+
+                    <button
+                        class="delete-btn"
+                        onclick="deleteMenuItem(${item.id})">
+                        Șterge
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+
+    html += `
+            </tbody>
+        </table>
+    `;
+
+    menuItemsTable.innerHTML = html;
+}
+
+function updateMenuCategoryFilter() {
+
+    if (!menuCategoryFilter) {
+        return;
+    }
+
+    const currentValue = menuCategoryFilter.value || "all";
+
+    const categoryCounts = {};
+
+    menuItemsCache.forEach(item => {
+        categoryCounts[item.category] =
+            (categoryCounts[item.category] || 0) + 1;
+    });
+
+    const orderedCategories = [
+        "Startere",
+        "Fel principal",
+        "Desert",
+        "Vinuri"
+    ];
+
+    const extraCategories = Object.keys(categoryCounts)
+        .filter(category => !orderedCategories.includes(category))
+        .sort();
+
+    const allCategories = [
+        ...orderedCategories.filter(category => categoryCounts[category]),
+        ...extraCategories
+    ];
+
+    let html = `
+        <option value="all">
+            Toate categoriile (${menuItemsCache.length})
+        </option>
+    `;
+
+    allCategories.forEach(category => {
+        html += `
+            <option value="${category}">
+                ${category} (${categoryCounts[category]})
+            </option>
+        `;
+    });
+
+    menuCategoryFilter.innerHTML = html;
+
+    menuCategoryFilter.value = currentValue;
+}
+
+if (menuSearchInput) {
+    menuSearchInput.addEventListener("input", renderMenuItems);
+}
+
+if (menuCategoryFilter) {
+    menuCategoryFilter.addEventListener("change", renderMenuItems);
 }
 
 if (menuItemForm) {
@@ -418,10 +569,18 @@ if (menuItemForm) {
 
             try {
 
-                const response =
-                    await fetch("/api/menu", {
+                const url = menuItemToEdit
+                    ? `/api/menu/${menuItemToEdit}`
+                    : "/api/menu";
 
-                        method: "POST",
+                const method = menuItemToEdit
+                    ? "PUT"
+                    : "POST";
+
+                const response =
+                    await fetch(url, {
+
+                        method,
 
                         headers: {
                             "Content-Type":
@@ -438,18 +597,102 @@ if (menuItemForm) {
 
                 menuItemForm.reset();
 
+                menuItemToEdit = null;
+
+                menuSubmitButton.textContent =
+                    "Adaugă preparat";
+
+                cancelMenuEdit.classList.add(
+                    "hidden"
+                );
+
                 displayMenuItems();
+
+                showMenuFeedback(
+                    method === "PUT"
+                        ? "Preparatul a fost actualizat"
+                        : "Preparatul a fost adăugat"
+                );
 
             } catch (error) {
 
                 console.error(error);
 
                 alert(
-                    "Nu s-a putut adăuga preparatul."
+                    "Nu s-a putut salva preparatul."
                 );
             }
         }
     );
+}
+
+function editMenuItem(id, category, name, description, price) {
+    menuItemToEdit = id;
+
+    menuItemForm.category.value = category;
+    menuItemForm.name.value = name;
+    menuItemForm.description.value = description;
+    menuItemForm.price.value = price;
+
+    menuSubmitButton.textContent = "Actualizează preparat";
+
+    cancelMenuEdit.classList.remove("hidden");
+
+    menuItemForm.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+    });
+}
+
+if (cancelMenuEdit) {
+    cancelMenuEdit.addEventListener("click", function() {
+        menuItemToEdit = null;
+
+        menuItemForm.reset();
+
+        menuSubmitButton.textContent = "Adaugă preparat";
+
+        cancelMenuEdit.classList.add("hidden");
+    });
+}
+
+function deleteMenuItem(id) {
+    menuItemToDelete = id;
+    deleteMenuModal.classList.remove("hidden");
+}
+
+if (cancelMenuDelete) {
+    cancelMenuDelete.addEventListener("click", function() {
+        menuItemToDelete = null;
+        deleteMenuModal.classList.add("hidden");
+    });
+}
+
+if (confirmMenuDelete) {
+    confirmMenuDelete.addEventListener("click", async function() {
+        if (!menuItemToDelete) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/menu/${menuItemToDelete}`, {
+                method: "DELETE"
+            });
+
+            if (!response.ok) {
+                throw new Error();
+            }
+
+            menuItemToDelete = null;
+            deleteMenuModal.classList.add("hidden");
+
+            displayMenuItems();
+
+        } catch (error) {
+            console.error(error);
+            alert("Nu s-a putut șterge preparatul.");
+        }
+    });
 }
 
 setInterval(displayReservations, 3000);

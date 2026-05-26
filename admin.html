@@ -105,17 +105,47 @@
                 >
             </div>
 
+            <div class="menu-form-actions">
+
             <button
                 type="submit"
-                class="btn btn-primary">
+                class="btn btn-primary"
+                id="menuSubmitButton">
                 Adaugă preparat
             </button>
 
+            <button
+                type="button"
+                class="btn btn-secondary hidden"
+                id="cancelMenuEdit">
+                Renunță
+            </button>
+
+            </div>
+
+            <p class="admin-feedback hidden" id="menuFeedback"></p>
+
         </form>
 
-        <div
-            id="menuItemsTable"
-            class="menu-items-table">
+        <div class="menu-list-panel">
+
+            <div class="menu-admin-toolbar">
+                <input
+                    type="text"
+                    id="menuSearchInput"
+                    placeholder="Caută preparat..."
+                >
+
+                <select id="menuCategoryFilter">
+                    <option value="all">Toate categoriile</option>
+                </select>
+            </div>
+
+            <div
+                id="menuItemsTable"
+                class="menu-items-table">
+            </div>
+
         </div>
 
     </div>
@@ -142,6 +172,29 @@
             </button>
 
             <button class="btn delete-confirm-btn" id="confirmDelete">
+                Șterge
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="confirm-modal hidden" id="deleteMenuModal">
+    <div class="confirm-modal-box">
+        <p class="section-subtitle">Velmora</p>
+
+        <h2>Ștergere preparat</h2>
+
+        <p>
+            Sigur dorești să ștergi acest preparat?
+            Această acțiune nu poate fi anulată.
+        </p>
+
+        <div class="confirm-modal-actions">
+            <button class="btn btn-secondary" id="cancelMenuDelete">
+                Renunță
+            </button>
+
+            <button class="btn delete-confirm-btn" id="confirmMenuDelete">
                 Șterge
             </button>
         </div>

@@ -182,8 +182,20 @@ app.delete("/api/reservations/:id", (req, res) => {
 
 app.get("/api/menu", (req, res) => {
 
-    const sql =
-        "SELECT * FROM menu_items ORDER BY category, id";
+    const sql = `
+    SELECT *
+    FROM menu_items
+    ORDER BY
+        CASE category
+            WHEN 'Startere' THEN 1
+            WHEN 'Fel principal' THEN 2
+            WHEN 'Desert' THEN 3
+            WHEN 'Vinuri' THEN 4
+            ELSE 99
+        END,
+        category,
+        id
+`;
 
     db.query(sql, (error, results) => {
 
@@ -260,6 +272,55 @@ app.post("/api/menu", (req, res) => {
             });
         }
     );
+});
+
+app.put("/api/menu/:id", (req, res) => {
+    const { id } = req.params;
+    const { category, name, description, price } = req.body;
+
+    if (!category || !name || !description || !price) {
+        return res.status(400).json({
+            message: "Toate câmpurile sunt obligatorii."
+        });
+    }
+
+    const sql = `
+        UPDATE menu_items
+        SET category = ?, name = ?, description = ?, price = ?
+        WHERE id = ?
+    `;
+
+    db.query(sql, [category, name, description, price, id], (error) => {
+        if (error) {
+            console.error(error);
+            return res.status(500).json({
+                message: "Eroare la actualizarea preparatului."
+            });
+        }
+
+        res.json({
+            message: "Preparatul a fost actualizat."
+        });
+    });
+});
+
+app.delete("/api/menu/:id", (req, res) => {
+    const { id } = req.params;
+
+    const sql = "DELETE FROM menu_items WHERE id = ?";
+
+    db.query(sql, [id], (error) => {
+        if (error) {
+            console.error(error);
+            return res.status(500).json({
+                message: "Eroare la ștergerea preparatului."
+            });
+        }
+
+        res.json({
+            message: "Preparatul a fost șters."
+        });
+    });
 });
 
 const PORT = process.env.PORT || 3000;
