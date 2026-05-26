@@ -284,18 +284,33 @@ a {
 .reservation-form select,
 .reservation-form textarea {
     width: 100%;
-    padding: 16px;
+    padding: 16px 18px;
     background-color: #181818;
     border: 1px solid rgba(201, 166, 107, 0.3);
     color: #FFFFFF;
     font-size: 15px;
     outline: none;
+    font-family: 'Lato', sans-serif;
+}
+
+.reservation-form select {
+    cursor: pointer;
+}
+
+.reservation-form select option {
+    background-color: #181818;
+    color: #FFFFFF;
+}
+
+.reservation-form input[type="date"] {
+    color-scheme: dark;
 }
 
 .reservation-form input:focus,
 .reservation-form select:focus,
 .reservation-form textarea:focus {
     border-color: #C9A66B;
+    box-shadow: 0 0 14px rgba(201, 166, 107, 0.12);
 }
 
 .form-row {
@@ -306,6 +321,266 @@ a {
 
 .reservation-form textarea {
     resize: none;
+}
+
+
+
+.time-dropdown {
+    position: relative;
+    width: 100%;
+}
+
+.time-dropdown-toggle {
+    width: 100%;
+    padding: 16px 18px;
+    background: #181818;
+    border: 1px solid rgba(201, 166, 107, 0.3);
+    color: #FFFFFF;
+    text-align: left;
+    cursor: pointer;
+    font-size: 15px;
+    font-family: 'Lato', sans-serif;
+}
+
+.time-dropdown-toggle:hover,
+.time-dropdown-toggle:focus {
+    border-color: #C9A66B;
+    box-shadow: 0 0 14px rgba(201, 166, 107, 0.12);
+}
+
+.time-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    width: 100%;
+    z-index: 50;
+
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+
+    padding: 12px;
+    background: #141414;
+    border: 1px solid rgba(201, 166, 107, 0.35);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+}
+
+.time-dropdown-menu.hidden {
+    display: none;
+}
+
+.time-dropdown-menu button {
+    padding: 12px 8px;
+    background: #181818;
+    border: 1px solid rgba(201, 166, 107, 0.25);
+    color: #FFFFFF;
+    cursor: pointer;
+    font-size: 14px;
+    transition: 0.3s;
+}
+
+.time-dropdown-menu button:hover,
+.time-dropdown-menu button.active {
+    background: #C9A66B;
+    color: #0F0F0F;
+}
+
+
+
+
+.date-dropdown {
+    position: relative;
+    width: 100%;
+}
+
+.date-dropdown-toggle {
+    width: 100%;
+    padding: 16px 18px;
+    background: #181818;
+    border: 1px solid rgba(201, 166, 107, 0.3);
+    color: #FFFFFF;
+    text-align: left;
+    cursor: pointer;
+    font-size: 15px;
+    font-family: 'Lato', sans-serif;
+}
+
+.date-dropdown-toggle:hover,
+.date-dropdown-toggle:focus {
+    border-color: #C9A66B;
+    box-shadow: 0 0 14px rgba(201, 166, 107, 0.12);
+}
+
+.date-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    width: 100%;
+    z-index: 60;
+
+    padding: 16px;
+    background: #141414;
+    border: 1px solid rgba(201, 166, 107, 0.35);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+}
+
+.date-dropdown-menu.hidden {
+    display: none;
+}
+
+.date-calendar-header {
+    display: grid;
+    grid-template-columns: 40px 1fr 40px;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.date-calendar-header span {
+    text-align: center;
+    color: #C9A66B;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.date-calendar-header button {
+    background: transparent;
+    border: 1px solid rgba(201, 166, 107, 0.25);
+    color: #FFFFFF;
+    cursor: pointer;
+    height: 36px;
+    font-size: 22px;
+    transition: 0.3s;
+}
+
+.date-calendar-header button:hover {
+    background: #C9A66B;
+    color: #0F0F0F;
+}
+
+.date-calendar-weekdays,
+.date-calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+}
+
+.date-calendar-weekdays {
+    margin-bottom: 8px;
+}
+
+.date-calendar-weekdays span {
+    color: #8f8f8f;
+    font-size: 12px;
+    text-align: center;
+}
+
+.date-calendar-days button,
+.date-calendar-days .empty-day {
+    height: 34px;
+}
+
+.date-calendar-days button {
+    background: #181818;
+    border: 1px solid rgba(201, 166, 107, 0.2);
+    color: #FFFFFF;
+    cursor: pointer;
+    font-size: 13px;
+    transition: 0.3s;
+}
+
+.date-calendar-days button:hover,
+.date-calendar-days button.active {
+    background: #C9A66B;
+    color: #0F0F0F;
+}
+
+
+
+
+.date-calendar-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.date-calendar-actions button {
+    flex: 1;
+    padding: 10px;
+    background: #181818;
+    border: 1px solid rgba(201, 166, 107, 0.25);
+    color: #FFFFFF;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.date-calendar-actions button:hover {
+    background: #C9A66B;
+    color: #0F0F0F;
+}
+
+
+
+
+
+.guests-dropdown {
+    position: relative;
+    width: 100%;
+}
+
+.guests-dropdown-toggle {
+    width: 100%;
+    padding: 16px 18px;
+    background: #181818;
+    border: 1px solid rgba(201, 166, 107, 0.3);
+    color: #FFFFFF;
+    text-align: left;
+    cursor: pointer;
+    font-size: 15px;
+    font-family: 'Lato', sans-serif;
+}
+
+.guests-dropdown-toggle:hover,
+.guests-dropdown-toggle:focus {
+    border-color: #C9A66B;
+    box-shadow: 0 0 14px rgba(201, 166, 107, 0.12);
+}
+
+.guests-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    width: 100%;
+    z-index: 50;
+
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+
+    padding: 12px;
+    background: #141414;
+    border: 1px solid rgba(201, 166, 107, 0.35);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+}
+
+.guests-dropdown-menu.hidden {
+    display: none;
+}
+
+.guests-dropdown-menu button {
+    padding: 12px 8px;
+    background: #181818;
+    border: 1px solid rgba(201, 166, 107, 0.25);
+    color: #FFFFFF;
+    cursor: pointer;
+    font-size: 14px;
+    transition: 0.3s;
+}
+
+.guests-dropdown-menu button:hover,
+.guests-dropdown-menu button.active {
+    background: #C9A66B;
+    color: #0F0F0F;
 }
 
 /* SUCCESS SCREEN */
@@ -1069,4 +1344,52 @@ a {
     color: #FFFFFF;
     font-size: 16px;
     font-weight: 600;
+}
+
+
+
+.reservations-panel {
+    margin-top: 35px;
+}
+
+.reservations-toolbar {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr;
+    gap: 20px;
+    padding: 24px;
+    margin-bottom: 28px;
+    background: #141414;
+    border: 1px solid rgba(201, 166, 107, 0.25);
+}
+
+.reservations-toolbar input,
+.reservations-toolbar select {
+    width: 100%;
+    padding: 15px 18px;
+    background: #181818;
+    border: 1px solid rgba(201, 166, 107, 0.25);
+    color: #FFFFFF;
+    font-size: 15px;
+    outline: none;
+}
+
+.reservations-toolbar input::placeholder {
+    color: #8f8f8f;
+}
+
+.reservations-toolbar input:focus,
+.reservations-toolbar select:focus {
+    border-color: #C9A66B;
+    /*box-shadow: 0 0 14px rgba(201, 166, 107, 0.12);*/
+}
+
+.reservations-toolbar select option {
+    background: #181818;
+    color: #FFFFFF;
+}
+
+@media (max-width: 768px) {
+    .reservations-toolbar {
+        grid-template-columns: 1fr;
+    }
 }

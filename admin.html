@@ -45,13 +45,67 @@
         </button>
     </div>
 
-    <div class="admin-actions">
-        <button class="btn btn-primary" id="clearReservations">
-            Șterge toate rezervările
-        </button>
-    </div>
+    <div class="reservations-panel">
 
-    <div class="reservations-table" id="reservationsTable"></div>
+        <div class="reservations-toolbar">
+            <input
+                type="text"
+                id="reservationSearchInput"
+                placeholder="Caută rezervare..."
+            >
+
+            <input type="hidden" id="reservationDateFilter">
+
+            <div class="date-dropdown" id="adminDateDropdown">
+                <button type="button" class="date-dropdown-toggle" id="adminDateDropdownToggle">
+                    Filtrează după dată
+                </button>
+
+                <div class="date-dropdown-menu hidden" id="adminDateDropdownMenu">
+                    <div class="date-calendar-header">
+                        <button type="button" id="adminPrevMonth">‹</button>
+                        <span id="adminCurrentMonthLabel"></span>
+                        <button type="button" id="adminNextMonth">›</button>
+                    </div>
+
+                    <div class="date-calendar-weekdays">
+                        <span>Lu</span>
+                        <span>Ma</span>
+                        <span>Mi</span>
+                        <span>Jo</span>
+                        <span>Vi</span>
+                        <span>Sâ</span>
+                        <span>Du</span>
+                    </div>
+
+                    <div class="date-calendar-days" id="adminDateCalendarDays"></div>
+
+                    <div class="date-calendar-actions">
+                        <button type="button" id="adminClearDate">
+                            Clear
+                        </button>
+
+                        <button type="button" id="adminTodayDate">
+                            Today
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <select id="reservationStatusFilter">
+                <option value="all">Toate rezervările</option>
+            </select>
+        </div>
+
+        <div class="admin-actions">
+            <button class="btn btn-primary" id="clearReservations">
+                Șterge toate rezervările
+            </button>
+        </div>
+
+        <div class="reservations-table" id="reservationsTable"></div>
+
+    </div>
 
     <div id="menuAdminSection" class="menu-admin-section">
 

@@ -53,19 +53,88 @@
             <input type="tel" name="phone" placeholder="Număr de telefon" required>
 
             <div class="form-row">
-                <input type="date" name="date" required>
-                <input type="time" name="time" required>
+
+                <input type="hidden" name="date" id="reservationDate" required>
+
+                <div class="date-dropdown" id="dateDropdown">
+                    <button type="button" class="date-dropdown-toggle" id="dateDropdownToggle">
+                        Selectează data
+                    </button>
+
+                    <div class="date-dropdown-menu hidden" id="dateDropdownMenu">
+                        <div class="date-calendar-header">
+                            <button type="button" id="prevMonth">‹</button>
+                            <span id="currentMonthLabel"></span>
+                            <button type="button" id="nextMonth">›</button>
+                        </div>
+
+                        <div class="date-calendar-weekdays">
+                            <span>Lu</span>
+                            <span>Ma</span>
+                            <span>Mi</span>
+                            <span>Jo</span>
+                            <span>Vi</span>
+                            <span>Sâ</span>
+                            <span>Du</span>
+                        </div>
+
+                        <div class="date-calendar-days" id="dateCalendarDays"></div>
+                    </div>
+                </div>
+
+                <input type="hidden" name="time" id="reservationTime" required>
+
+                <div class="time-dropdown" id="timeDropdown">
+                    <button type="button" class="time-dropdown-toggle" id="timeDropdownToggle">
+                        Selectează ora
+                    </button>
+
+                    <div class="time-dropdown-menu hidden" id="timeDropdownMenu">
+                        <button type="button" data-time="12:00">12:00</button>
+                        <button type="button" data-time="12:30">12:30</button>
+                        <button type="button" data-time="13:00">13:00</button>
+                        <button type="button" data-time="13:30">13:30</button>
+                        <button type="button" data-time="14:00">14:00</button>
+                        <button type="button" data-time="14:30">14:30</button>
+                        <button type="button" data-time="15:00">15:00</button>
+                        <button type="button" data-time="15:30">15:30</button>
+                        <button type="button" data-time="16:00">16:00</button>
+                        <button type="button" data-time="16:30">16:30</button>
+                        <button type="button" data-time="17:00">17:00</button>
+                        <button type="button" data-time="17:30">17:30</button>
+                        <button type="button" data-time="18:00">18:00</button>
+                        <button type="button" data-time="18:30">18:30</button>
+                        <button type="button" data-time="19:00">19:00</button>
+                        <button type="button" data-time="19:30">19:30</button>
+                        <button type="button" data-time="20:00">20:00</button>
+                        <button type="button" data-time="20:30">20:30</button>
+                        <button type="button" data-time="21:00">21:00</button>
+                        <button type="button" data-time="21:30">21:30</button>
+                        <button type="button" data-time="22:00">22:00</button>
+                    </div>
+                </div>
+
             </div>
 
-            <select name="guests" required>
-                <option value="">Număr persoane</option>
-                <option>1 persoană</option>
-                <option>2 persoane</option>
-                <option>3 persoane</option>
-                <option>4 persoane</option>
-                <option>5 persoane</option>
-                <option>6+ persoane</option>
-            </select>
+            <input type="hidden" name="guests" id="reservationGuests" required>
+
+                <div class="guests-dropdown" id="guestsDropdown">
+                    <button type="button" class="guests-dropdown-toggle" id="guestsDropdownToggle">
+                        Selectează numărul de persoane
+                    </button>
+
+                    <div class="guests-dropdown-menu hidden" id="guestsDropdownMenu">
+                        <button type="button" data-guests="1 persoană">1 persoană</button>
+                        <button type="button" data-guests="2 persoane">2 persoane</button>
+                        <button type="button" data-guests="3 persoane">3 persoane</button>
+                        <button type="button" data-guests="4 persoane">4 persoane</button>
+                        <button type="button" data-guests="5 persoane">5 persoane</button>
+                        <button type="button" data-guests="6 persoane">6 persoane</button>
+                        <button type="button" data-guests="7 persoane">7 persoane</button>
+                        <button type="button" data-guests="8 persoane">8 persoane</button>
+                        <button type="button" data-guests="8+ persoane">8+ persoane</button>
+                    </div>
+                </div>
 
             <textarea name="message" rows="5" placeholder="Cereri speciale"></textarea>
 

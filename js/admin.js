@@ -6,11 +6,29 @@ const logoutAdmin = document.getElementById("logoutAdmin");
 
 const reservationsTable = document.getElementById("reservationsTable");
 const clearReservations = document.getElementById("clearReservations");
+const reservationSearchInput = document.getElementById("reservationSearchInput");
+const reservationStatusFilter = document.getElementById("reservationStatusFilter");
+const reservationDateFilter = document.getElementById("reservationDateFilter");
+
+let reservationsCache = [];
+
+const adminDateDropdown = document.getElementById("adminDateDropdown");
+const adminDateDropdownToggle = document.getElementById("adminDateDropdownToggle");
+const adminDateDropdownMenu = document.getElementById("adminDateDropdownMenu");
+const adminCurrentMonthLabel = document.getElementById("adminCurrentMonthLabel");
+const adminDateCalendarDays = document.getElementById("adminDateCalendarDays");
+const adminPrevMonth = document.getElementById("adminPrevMonth");
+const adminNextMonth = document.getElementById("adminNextMonth");
+const adminClearDate = document.getElementById("adminClearDate");
+const adminTodayDate = document.getElementById("adminTodayDate");
+
+let adminCalendarDate = new Date();
+
 const menuItemForm = document.getElementById("menuItemForm");
 const menuItemsTable = document.getElementById("menuItemsTable");
 
-const menuSubmitButton =document.getElementById("menuSubmitButton");
-const cancelMenuEdit =document.getElementById("cancelMenuEdit");
+const menuSubmitButton = document.getElementById("menuSubmitButton");
+const cancelMenuEdit = document.getElementById("cancelMenuEdit");
 
 const menuSearchInput = document.getElementById("menuSearchInput");
 const menuCategoryFilter = document.getElementById("menuCategoryFilter");
@@ -166,107 +184,13 @@ async function displayReservations() {
         const response = await fetch("/api/reservations");
         const reservations = await response.json();
 
-        if (!Array.isArray(reservations) || reservations.length === 0) {
-            reservationsTable.innerHTML = `
-                <p class="empty-message">Nu există rezervări momentan.</p>
-            `;
-            return;
-        }
+        reservationsCache = Array.isArray(reservations)
+            ? reservations
+            : [];
 
-        let html = `
-            <div class="reservation-cards">
-        `;
+        updateReservationStatusFilter();
 
-        reservations.forEach(reservation => {
-            let actionButtons = `
-                <div class="reservation-status-actions">
-            `;
-
-            if (reservation.status === "pending") {
-
-                actionButtons += `
-
-                    <button
-                        class="status-btn status-btn-confirm"
-                        onclick="updateReservationStatus(${reservation.id}, 'confirmed')">
-                        Confirmă
-                    </button>
-
-                    <button
-                        class="status-btn status-btn-cancel"
-                        onclick="updateReservationStatus(${reservation.id}, 'cancelled')">
-                        Anulează
-                    </button>
-
-                `;
-            }
-
-            actionButtons += `
-                </div>
-            `;
-
-            html += `
-                <div class="reservation-card">
-
-                    <div class="reservation-card-header">
-                        <div>
-                            <h3>${reservation.name}</h3>
-                            <p>${reservation.email}</p>
-                        </div>
-
-                        <span class="status-badge status-${reservation.status}">
-                            ${statusLabels[reservation.status] || reservation.status}
-                        </span>
-                    </div>
-
-                    <div class="reservation-card-details">
-                        <div>
-                            <span>Telefon</span>
-                            <strong>${reservation.phone}</strong>
-                        </div>
-
-                        <div>
-                            <span>Data</span>
-                            <strong>${formatDate(reservation.reservation_date)}</strong>
-                        </div>
-
-                        <div>
-                            <span>Ora</span>
-                            <strong>${reservation.reservation_time}</strong>
-                        </div>
-
-                        <div>
-                            <span>Persoane</span>
-                            <strong>${reservation.guests}</strong>
-                        </div>
-                    </div>
-
-                    <div class="reservation-card-message">
-                        <span>Cereri speciale</span>
-                        <p>${reservation.message || "Nu există cereri speciale."}</p>
-                    </div>
-
-                    <div class="reservation-card-footer">
-                        <small>Primită la: ${formatDateTime(reservation.created_at)}</small>
-
-                        ${actionButtons}
-
-                        <button
-                            class="delete-btn reservation-delete-action"
-                            onclick="deleteReservation(${reservation.id})">
-                            Șterge
-                        </button>
-                    </div>
-
-                </div>
-            `;
-        });
-
-        html += `
-            </div>
-        `;
-
-        reservationsTable.innerHTML = html;
+        renderReservations();
 
     } catch (error) {
         console.error(error);
@@ -275,6 +199,220 @@ async function displayReservations() {
             <p class="empty-message">Eroare la încărcarea rezervărilor.</p>
         `;
     }
+}
+
+function renderReservations() {
+    let reservations = [...reservationsCache];
+
+    const searchValue = reservationSearchInput
+        ? reservationSearchInput.value.toLowerCase().trim()
+        : "";
+
+    const selectedStatus = reservationStatusFilter
+        ? reservationStatusFilter.value
+        : "all";
+
+    if (selectedStatus !== "all") {
+        reservations = reservations.filter(reservation =>
+            reservation.status === selectedStatus
+        );
+    }
+
+    const selectedDate = reservationDateFilter
+        ? reservationDateFilter.value
+        : "";
+
+    if (selectedDate) {
+        reservations = reservations.filter(reservation => {
+            const reservationDate =
+                new Date(reservation.reservation_date)
+                    .toISOString()
+                    .split("T")[0];
+
+            return reservationDate === selectedDate;
+        });
+    }
+
+    updateReservationStatusFilter();
+
+    if (searchValue) {
+        reservations = reservations.filter(reservation =>
+            reservation.name.toLowerCase().includes(searchValue) ||
+            reservation.email.toLowerCase().includes(searchValue) ||
+            reservation.phone.toLowerCase().includes(searchValue) ||
+            (statusLabels[reservation.status] || reservation.status)
+                .toLowerCase()
+                .includes(searchValue)
+        );
+    }
+
+    if (!Array.isArray(reservations) || reservations.length === 0) {
+        reservationsTable.innerHTML = `
+            <p class="empty-message">Nu există rezervări pentru filtrul selectat.</p>
+        `;
+        return;
+    }
+
+    let html = `
+        <div class="reservation-cards">
+    `;
+
+    reservations.forEach(reservation => {
+        let actionButtons = `
+            <div class="reservation-status-actions">
+        `;
+
+        if (reservation.status === "pending") {
+            actionButtons += `
+                <button
+                    class="status-btn status-btn-confirm"
+                    onclick="updateReservationStatus(${reservation.id}, 'confirmed')">
+                    Confirmă
+                </button>
+
+                <button
+                    class="status-btn status-btn-cancel"
+                    onclick="updateReservationStatus(${reservation.id}, 'cancelled')">
+                    Anulează
+                </button>
+            `;
+        }
+
+        actionButtons += `
+            </div>
+        `;
+
+        html += `
+            <div class="reservation-card">
+
+                <div class="reservation-card-header">
+                    <div>
+                        <h3>${reservation.name}</h3>
+                        <p>${reservation.email}</p>
+                    </div>
+
+                    <span class="status-badge status-${reservation.status}">
+                        ${statusLabels[reservation.status] || reservation.status}
+                    </span>
+                </div>
+
+                <div class="reservation-card-details">
+                    <div>
+                        <span>Telefon</span>
+                        <strong>${reservation.phone}</strong>
+                    </div>
+
+                    <div>
+                        <span>Data</span>
+                        <strong>${formatDate(reservation.reservation_date)}</strong>
+                    </div>
+
+                    <div>
+                        <span>Ora</span>
+                        <strong>${reservation.reservation_time}</strong>
+                    </div>
+
+                    <div>
+                        <span>Persoane</span>
+                        <strong>${reservation.guests}</strong>
+                    </div>
+                </div>
+
+                <div class="reservation-card-message">
+                    <span>Cereri speciale</span>
+                    <p>${reservation.message || "Nu există cereri speciale."}</p>
+                </div>
+
+                <div class="reservation-card-footer">
+                    <small>Primită la: ${formatDateTime(reservation.created_at)}</small>
+
+                    ${actionButtons}
+
+                    <button
+                        class="delete-btn reservation-delete-action"
+                        onclick="deleteReservation(${reservation.id})">
+                        Șterge
+                    </button>
+                </div>
+
+            </div>
+        `;
+    });
+
+    html += `
+        </div>
+    `;
+
+    reservationsTable.innerHTML = html;
+}
+
+function updateReservationStatusFilter() {
+    if (!reservationStatusFilter) {
+        return;
+    }
+
+    const currentValue = reservationStatusFilter.value || "all";
+
+    const selectedDate = reservationDateFilter
+        ? reservationDateFilter.value
+        : "";
+
+    let reservationsForCounts = [...reservationsCache];
+
+    if (selectedDate) {
+        reservationsForCounts = reservationsForCounts.filter(reservation => {
+            const reservationDate =
+                new Date(reservation.reservation_date)
+                    .toISOString()
+                    .split("T")[0];
+
+            return reservationDate === selectedDate;
+        });
+    }
+
+    const statusCounts = {
+        pending: 0,
+        confirmed: 0,
+        cancelled: 0
+    };
+
+    reservationsForCounts.forEach(reservation => {
+        if (statusCounts[reservation.status] !== undefined) {
+            statusCounts[reservation.status]++;
+        }
+    });
+
+    reservationStatusFilter.innerHTML = `
+        <option value="all">
+            Toate rezervările (${reservationsForCounts.length})
+        </option>
+
+        <option value="pending">
+            În așteptare (${statusCounts.pending})
+        </option>
+
+        <option value="confirmed">
+            Confirmate (${statusCounts.confirmed})
+        </option>
+
+        <option value="cancelled">
+            Anulate (${statusCounts.cancelled})
+        </option>
+    `;
+
+    reservationStatusFilter.value = currentValue;
+}
+
+if (reservationSearchInput) {
+    reservationSearchInput.addEventListener("input", renderReservations);
+}
+
+if (reservationStatusFilter) {
+    reservationStatusFilter.addEventListener("change", renderReservations);
+}
+
+if (reservationDateFilter) {
+    reservationDateFilter.addEventListener("change", renderReservations);
 }
 
 async function updateReservationStatus(id, status) {
@@ -691,6 +829,162 @@ if (confirmMenuDelete) {
         } catch (error) {
             console.error(error);
             alert("Nu s-a putut șterge preparatul.");
+        }
+    });
+}
+
+function formatAdminDateForInput(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+}
+
+function formatAdminDateForDisplay(date) {
+    return date.toLocaleDateString("ro-RO", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+    });
+}
+
+const adminMonthNames = [
+    "Ianuarie",
+    "Februarie",
+    "Martie",
+    "Aprilie",
+    "Mai",
+    "Iunie",
+    "Iulie",
+    "August",
+    "Septembrie",
+    "Octombrie",
+    "Noiembrie",
+    "Decembrie"
+];
+
+function renderAdminCalendar() {
+    if (!adminDateCalendarDays || !adminCurrentMonthLabel) {
+        return;
+    }
+
+    const year = adminCalendarDate.getFullYear();
+    const month = adminCalendarDate.getMonth();
+
+    adminCurrentMonthLabel.textContent = `${adminMonthNames[month]} ${year}`;
+
+    adminDateCalendarDays.innerHTML = "";
+
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+
+    let startDay = firstDay.getDay();
+
+    if (startDay === 0) {
+        startDay = 7;
+    }
+
+    for (let i = 1; i < startDay; i++) {
+        const emptyCell = document.createElement("span");
+        emptyCell.classList.add("empty-day");
+        adminDateCalendarDays.appendChild(emptyCell);
+    }
+
+    for (let day = 1; day <= lastDay.getDate(); day++) {
+        const date = new Date(year, month, day);
+        const button = document.createElement("button");
+
+        button.type = "button";
+        button.textContent = day;
+        button.dataset.date = formatAdminDateForInput(date);
+
+        if (reservationDateFilter && reservationDateFilter.value === button.dataset.date) {
+            button.classList.add("active");
+        }
+
+        button.addEventListener("click", function() {
+            reservationDateFilter.value = button.dataset.date;
+            adminDateDropdownToggle.textContent = formatAdminDateForDisplay(date);
+
+            adminDateCalendarDays.querySelectorAll("button").forEach(btn => {
+                btn.classList.remove("active");
+            });
+
+            button.classList.add("active");
+            adminDateDropdownMenu.classList.add("hidden");
+
+            renderReservations();
+        });
+
+        adminDateCalendarDays.appendChild(button);
+    }
+}
+
+if (
+    reservationDateFilter &&
+    adminDateDropdown &&
+    adminDateDropdownToggle &&
+    adminDateDropdownMenu
+) {
+    renderAdminCalendar();
+
+    adminDateDropdownToggle.addEventListener("click", function() {
+        adminDateDropdownMenu.classList.toggle("hidden");
+    });
+
+    adminPrevMonth.addEventListener("click", function() {
+        adminCalendarDate.setMonth(adminCalendarDate.getMonth() - 1);
+        renderAdminCalendar();
+    });
+
+    adminNextMonth.addEventListener("click", function() {
+        adminCalendarDate.setMonth(adminCalendarDate.getMonth() + 1);
+        renderAdminCalendar();
+    });
+
+    if (adminClearDate) {
+        adminClearDate.addEventListener("click", function() {
+            reservationDateFilter.value = "";
+
+            adminDateDropdownToggle.textContent =
+                "Filtrează după dată";
+
+            adminDateCalendarDays
+                .querySelectorAll("button")
+                .forEach(button => {
+                    button.classList.remove("active");
+                });
+
+            adminDateDropdownMenu.classList.add("hidden");
+
+            renderReservations();
+        });
+    }
+
+    if (adminTodayDate) {
+        adminTodayDate.addEventListener("click", function() {
+            const today = new Date();
+
+            reservationDateFilter.value =
+                formatAdminDateForInput(today);
+
+            adminDateDropdownToggle.textContent =
+                formatAdminDateForDisplay(today);
+
+            adminCalendarDate = new Date(today);
+
+            renderAdminCalendar();
+
+            adminDateDropdownMenu.classList.add("hidden");
+
+            renderReservations();
+        });
+    }
+
+    document.addEventListener("click", function(event) {
+        if (!adminDateDropdown.contains(event.target)) {
+            adminDateDropdownMenu.classList.add("hidden");
         }
     });
 }
