@@ -24,8 +24,107 @@ const db = mysql.createPool({
 
 console.log("Pool MySQL configurat.");
 
+const RESTAURANT_CAPACITY = 40;
+
+function getGuestsNumber(guests) {
+    return parseInt(guests, 10) || 0;
+}
+
+function getReservationInterval(time) {
+    const [hour, minute] = time.split(":").map(Number);
+    const reservationMinutes = hour * 60 + minute;
+
+    if (reservationMinutes >= 20 * 60) {
+        return {
+            start: 18 * 60,
+            end: 24 * 60
+        };
+    }
+
+    return {
+        start: Math.max(reservationMinutes - 120, 0),
+        end: reservationMinutes + 120
+    };
+}
+
+function timeToMinutes(time) {
+    const [hour, minute] = time.split(":").map(Number);
+    return hour * 60 + minute;
+}
+
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "..", "index.html"));
+});
+
+app.get("/api/availability", (req, res) => {
+    const { date, guests } = req.query;
+
+    if (!date || !guests) {
+        return res.status(400).json({
+            message: "Data și numărul de persoane sunt obligatorii."
+        });
+    }
+
+    const requestedGuests = getGuestsNumber(guests);
+
+    const timeSlots = [
+        "12:00", "12:30",
+        "13:00", "13:30",
+        "14:00", "14:30",
+        "15:00", "15:30",
+        "16:00", "16:30",
+        "17:00", "17:30",
+        "18:00", "18:30",
+        "19:00", "19:30",
+        "20:00", "20:30",
+        "21:00", "21:30",
+        "22:00"
+    ];
+
+    const sql = `
+        SELECT reservation_time, guests
+        FROM reservations
+        WHERE reservation_date = ?
+        AND status = 'confirmed'
+    `;
+
+    db.query(sql, [date], (error, confirmedReservations) => {
+        if (error) {
+            console.error(error);
+
+            return res.status(500).json({
+                message: "Eroare la verificarea disponibilității."
+            });
+        }
+
+        const unavailableTimes = [];
+
+        timeSlots.forEach(time => {
+            const interval = getReservationInterval(time);
+
+            let occupiedSeats = 0;
+
+            confirmedReservations.forEach(reservation => {
+                const reservationMinutes =
+                    timeToMinutes(reservation.reservation_time);
+
+                if (
+                    reservationMinutes >= interval.start &&
+                    reservationMinutes <= interval.end
+                ) {
+                    occupiedSeats += getGuestsNumber(reservation.guests);
+                }
+            });
+
+            if (occupiedSeats + requestedGuests > RESTAURANT_CAPACITY) {
+                unavailableTimes.push(time);
+            }
+        });
+
+        res.json({
+            unavailableTimes
+        });
+    });
 });
 
 app.post("/api/reservations", (req, res) => {
@@ -37,24 +136,70 @@ app.post("/api/reservations", (req, res) => {
         });
     }
 
-    const sql = `
-        INSERT INTO reservations
-        (name, email, phone, reservation_date, reservation_time, guests, message)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+    const requestedGuests = getGuestsNumber(guests);
+    const interval = getReservationInterval(time);
+
+    const capacitySql = `
+        SELECT reservation_time, guests
+        FROM reservations
+        WHERE reservation_date = ?
+        AND status = 'confirmed'
     `;
 
-    db.query(sql, [name, email, phone, date, time, guests, message], (error, result) => {
-        if (error) {
-            console.error(error);
+    db.query(capacitySql, [date], (capacityError, confirmedReservations) => {
+        if (capacityError) {
+            console.error(capacityError);
+
             return res.status(500).json({
-                message: "Eroare la salvarea rezervării."
+                message: "Eroare la verificarea disponibilității."
             });
         }
 
-        res.status(201).json({
-            message: "Rezervarea a fost salvată.",
-            reservationId: result.insertId
+        let occupiedSeats = 0;
+
+        confirmedReservations.forEach(reservation => {
+            const reservationMinutes =
+                timeToMinutes(reservation.reservation_time);
+
+            if (
+                reservationMinutes >= interval.start &&
+                reservationMinutes <= interval.end
+            ) {
+                occupiedSeats += getGuestsNumber(reservation.guests);
+            }
         });
+
+        if (occupiedSeats + requestedGuests > RESTAURANT_CAPACITY) {
+            return res.status(409).json({
+                message:
+                    "Ne pare rău, nu mai avem disponibilitate pentru intervalul selectat. Vă rugăm să alegeți altă oră."
+            });
+        }
+
+        const insertSql = `
+            INSERT INTO reservations
+            (name, email, phone, reservation_date, reservation_time, guests, message)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        `;
+
+        db.query(
+            insertSql,
+            [name, email, phone, date, time, guests, message],
+            (insertError, result) => {
+                if (insertError) {
+                    console.error(insertError);
+
+                    return res.status(500).json({
+                        message: "Eroare la salvarea rezervării."
+                    });
+                }
+
+                res.status(201).json({
+                    message: "Rezervarea a fost salvată.",
+                    reservationId: result.insertId
+                });
+            }
+        );
     });
 });
 
@@ -72,7 +217,7 @@ app.get("/api/reservations", (req, res) => {
             status,
             created_at
         FROM reservations
-        ORDER BY created_at DESC
+        ORDER BY created_at ASC
     `;
 
     db.query(sql, (error, results) => {

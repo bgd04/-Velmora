@@ -126,6 +126,10 @@ if (reservationTimeInput && timeDropdownToggle && timeDropdownMenu) {
 
     timeDropdownMenu.querySelectorAll("button").forEach(button => {
         button.addEventListener("click", function() {
+            if (button.disabled) {
+                return;
+            }
+
             const selectedTime = button.dataset.time;
 
             reservationTimeInput.value = selectedTime;
@@ -143,6 +147,77 @@ if (reservationTimeInput && timeDropdownToggle && timeDropdownMenu) {
     document.addEventListener("click", function(event) {
         if (!timeDropdown.contains(event.target)) {
             timeDropdownMenu.classList.add("hidden");
+        }
+    });
+}
+
+
+
+
+
+async function updateAvailableTimeSlots() {
+    if (
+        !reservationDateInput ||
+        !reservationGuestsInput ||
+        !reservationTimeInput ||
+        !timeDropdownMenu ||
+        !timeDropdownToggle
+    ) {
+        return;
+    }
+
+    const selectedDate = reservationDateInput.value;
+    const selectedGuests = reservationGuestsInput.value;
+
+    if (!selectedDate || !selectedGuests) {
+        return;
+    }
+
+    let unavailableTimes = [];
+
+    try {
+        const response = await fetch(
+            `/api/availability?date=${selectedDate}&guests=${encodeURIComponent(selectedGuests)}`
+        );
+
+        const data = await response.json();
+
+        unavailableTimes = data.unavailableTimes || [];
+
+    } catch (error) {
+        console.error(error);
+    }
+
+    const today = new Date();
+    const todayString = formatDateForInput(today);
+
+    timeDropdownMenu.querySelectorAll("button").forEach(button => {
+        const time = button.dataset.time;
+
+        button.disabled = false;
+        button.classList.remove("disabled");
+
+        if (selectedDate === todayString) {
+            const [hours, minutes] = time.split(":").map(Number);
+
+            const slotDate = new Date();
+            slotDate.setHours(hours, minutes, 0, 0);
+
+            if (slotDate <= today) {
+                button.disabled = true;
+                button.classList.add("disabled");
+            }
+        }
+
+        if (unavailableTimes.includes(time)) {
+            button.disabled = true;
+            button.classList.add("disabled");
+        }
+
+        if (button.disabled && reservationTimeInput.value === time) {
+            reservationTimeInput.value = "";
+            timeDropdownToggle.textContent = "Selectează ora";
+            button.classList.remove("active");
         }
     });
 }
@@ -229,13 +304,23 @@ function renderCalendar() {
         button.textContent = day;
         button.dataset.date = formatDateForInput(date);
 
+        if (isPastDate(date)) {
+            button.disabled = true;
+            button.classList.add("disabled");
+        }
+
         if (reservationDateInput && reservationDateInput.value === button.dataset.date) {
             button.classList.add("active");
         }
 
         button.addEventListener("click", function() {
+            if (button.disabled) {
+                return;
+            }
             reservationDateInput.value = button.dataset.date;
             dateDropdownToggle.textContent = formatDateForDisplay(date);
+
+            updateAvailableTimeSlots();
 
             dateCalendarDays.querySelectorAll("button").forEach(btn => {
                 btn.classList.remove("active");
@@ -280,6 +365,22 @@ if (
 
 
 
+
+function isPastDate(date) {
+    const today = new Date();
+
+    today.setHours(0, 0, 0, 0);
+
+    const checkedDate = new Date(date);
+    checkedDate.setHours(0, 0, 0, 0);
+
+    return checkedDate < today;
+}
+
+
+
+
+
 const reservationGuestsInput = document.getElementById("reservationGuests");
 const guestsDropdown = document.getElementById("guestsDropdown");
 const guestsDropdownToggle = document.getElementById("guestsDropdownToggle");
@@ -309,6 +410,8 @@ if (reservationGuestsInput && guestsDropdown && guestsDropdownToggle && guestsDr
     document.addEventListener("click", function(event) {
         if (!guestsDropdown.contains(event.target)) {
             guestsDropdownMenu.classList.add("hidden");
+
+            updateAvailableTimeSlots();
         }
     });
 }

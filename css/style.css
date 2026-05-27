@@ -356,13 +356,13 @@ a {
     z-index: 50;
 
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 8px;
 
     padding: 12px;
     background: #141414;
     border: 1px solid rgba(201, 166, 107, 0.35);
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);0
 }
 
 .time-dropdown-menu.hidden {
@@ -370,12 +370,12 @@ a {
 }
 
 .time-dropdown-menu button {
-    padding: 12px 8px;
+    padding: 9px 6px;
     background: #181818;
     border: 1px solid rgba(201, 166, 107, 0.25);
     color: #FFFFFF;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 13px;
     transition: 0.3s;
 }
 
@@ -1392,4 +1392,38 @@ a {
     .reservations-toolbar {
         grid-template-columns: 1fr;
     }
+}
+
+
+
+
+.date-calendar-days button.disabled {
+    opacity: 0.25;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+
+
+
+.time-dropdown-menu button.disabled {
+    opacity: 0.25;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+
+
+
+.reservation-capacity {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 14px;
+}
+
+.capacity-warning {
+    color: #d97706;
+    font-weight: 600;
 }

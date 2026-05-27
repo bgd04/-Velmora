@@ -1,3 +1,5 @@
+const RESTAURANT_CAPACITY = 40;
+
 const adminLoginSection = document.getElementById("adminLoginSection");
 const adminPanel = document.getElementById("adminPanel");
 const adminLoginForm = document.getElementById("adminLoginForm");
@@ -175,6 +177,70 @@ function formatDateTime(value) {
     return new Date(value).toLocaleString("ro-RO");
 }
 
+function getGuestsNumber(guests) {
+    return parseInt(guests, 10) || 0;
+}
+
+function calculateOccupiedSeats(reservation) {
+
+    const reservationDate =
+        reservation.reservation_date;
+
+    const reservationHour =
+        reservation.reservation_time;
+
+    const [hour, minute] =
+        reservationHour.split(":").map(Number);
+
+    const reservationMinutes =
+        hour * 60 + minute;
+
+    let intervalStart;
+    let intervalEnd;
+
+    if (reservationMinutes >= 20 * 60) {
+        intervalStart = 18 * 60;
+        intervalEnd = 24 * 60;
+    } else {
+        intervalStart = reservationMinutes - 120;
+        intervalEnd = reservationMinutes + 120;
+    }
+
+    let occupiedSeats = 0;
+
+    reservationsCache.forEach(item => {
+
+        if (item.status !== "confirmed") {
+            return;
+        }
+
+        if (
+            item.reservation_date !==
+            reservationDate
+        ) {
+            return;
+        }
+
+        const [itemHour, itemMinute] =
+            item.reservation_time
+                .split(":")
+                .map(Number);
+
+        const itemMinutes =
+            itemHour * 60 + itemMinute;
+
+        if (
+            itemMinutes >= intervalStart &&
+            itemMinutes <= intervalEnd
+        ) {
+            occupiedSeats +=
+                getGuestsNumber(item.guests);
+        }
+    });
+
+    return occupiedSeats;
+}
+
 async function displayReservations() {
     if (!isAdminLoggedIn()) {
         return;
@@ -258,6 +324,10 @@ function renderReservations() {
     `;
 
     reservations.forEach(reservation => {
+        const occupiedSeats = calculateOccupiedSeats(reservation);
+        const seatsAfterConfirmation = reservation.status === "pending" ? occupiedSeats + getGuestsNumber(reservation.guests) : occupiedSeats;
+        const exceedsCapacity = reservation.status === "pending" && seatsAfterConfirmation > RESTAURANT_CAPACITY;
+
         let actionButtons = `
             <div class="reservation-status-actions">
         `;
@@ -321,6 +391,24 @@ function renderReservations() {
                 <div class="reservation-card-message">
                     <span>Cereri speciale</span>
                     <p>${reservation.message || "Nu există cereri speciale."}</p>
+                </div>
+
+                <div class="reservation-capacity">
+                    <span>
+                        Locuri confirmate:
+                        ${occupiedSeats}/${RESTAURANT_CAPACITY}
+                    </span>
+
+                    ${
+                        exceedsCapacity
+                            ? `
+                                <span class="capacity-warning">
+                                    ⚠ După confirmare:
+                                    ${seatsAfterConfirmation}/${RESTAURANT_CAPACITY}
+                                </span>
+                            `
+                            : ""
+                    }
                 </div>
 
                 <div class="reservation-card-footer">
