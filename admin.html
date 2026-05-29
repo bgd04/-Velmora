@@ -45,6 +45,23 @@
         </button>
     </div>
 
+    <div class="admin-stats">
+        <div class="admin-stat-card">
+            <span>Rezervări confirmate azi</span>
+            <strong id="todayReservationsCount">0</strong>
+        </div>
+
+        <div class="admin-stat-card">
+            <span>În așteptare</span>
+            <strong id="pendingReservationsCount">0</strong>
+        </div>
+
+        <div class="admin-stat-card">
+            <span>Locuri ocupate in seara asta</span>
+            <strong id="eveningSeatsCount">0/40</strong>
+        </div>
+    </div>
+
     <div class="reservations-panel">
 
         <div class="reservations-toolbar">
@@ -249,6 +266,29 @@
             </button>
 
             <button class="btn delete-confirm-btn" id="confirmMenuDelete">
+                Șterge
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="confirm-modal hidden" id="deleteReservationsModal">
+    <div class="confirm-modal-box">
+        <p class="section-subtitle">Velmora</p>
+
+        <h2>Ștergere rezervări</h2>
+
+        <p id="deleteReservationsMessage">
+            Sigur dorești să ștergi rezervările afișate?
+            Această acțiune nu poate fi anulată.
+        </p>
+
+        <div class="confirm-modal-actions">
+            <button class="btn btn-secondary" id="cancelDeleteReservations">
+                Renunță
+            </button>
+
+            <button class="btn delete-confirm-btn" id="confirmDeleteReservations">
                 Șterge
             </button>
         </div>

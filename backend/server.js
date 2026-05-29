@@ -2,6 +2,7 @@ const express = require("express");
 const mysql = require("mysql2");
 const cors = require("cors");
 const path = require("path");
+const nodemailer = require("nodemailer");
 
 require("dotenv").config({ path: path.join(__dirname, ".env") });
 
@@ -24,6 +25,40 @@ const db = mysql.createPool({
 
 console.log("Pool MySQL configurat.");
 
+const emailTransporter = nodemailer.createTransport({
+    host: process.env.EMAIL_HOST,
+    port: Number(process.env.EMAIL_PORT),
+    secure: false,
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+    }
+});
+
+async function sendEmail(to, subject, html) {
+
+    if (
+        !process.env.EMAIL_HOST ||
+        !process.env.EMAIL_USER ||
+        !process.env.EMAIL_PASS
+    ) {
+        return;
+    }
+
+
+    await emailTransporter.sendMail({
+        from: process.env.EMAIL_FROM,
+        to,
+        subject,
+        html
+    });
+
+}
+
+function formatReservationDate(date) {
+    return new Intl.DateTimeFormat("ro-RO").format(new Date(date));
+}
+
 const RESTAURANT_CAPACITY = 40;
 
 function getGuestsNumber(guests) {
@@ -36,13 +71,13 @@ function getReservationInterval(time) {
 
     if (reservationMinutes >= 20 * 60) {
         return {
-            start: 18 * 60,
+            start: 20 * 60,
             end: 24 * 60
         };
     }
 
     return {
-        start: Math.max(reservationMinutes - 120, 0),
+        start: reservationMinutes,
         end: reservationMinutes + 120
     };
 }
@@ -194,6 +229,31 @@ app.post("/api/reservations", (req, res) => {
                     });
                 }
 
+                sendEmail(
+                    email,
+                    "Rezervarea ta la Velmora a fost primită",
+                    `
+                        <h2>Rezervarea ta a fost primită</h2>
+
+                        <p>Bună, ${name}!</p>
+
+                        <p>
+                            Am primit cererea ta de rezervare pentru
+                            <strong>${date}</strong>, ora
+                            <strong>${time}</strong>, pentru
+                            <strong>${guests}</strong>.
+                        </p>
+
+                        <p>
+                            Echipa Velmora va verifica disponibilitatea și te va contacta pentru confirmare.
+                        </p>
+
+                        <p>Cu drag,<br>Echipa Velmora</p>
+                    `
+                ).catch(error => {
+                    console.error("Eroare la trimiterea emailului:", error);
+                });
+
                 res.status(201).json({
                     message: "Rezervarea a fost salvată.",
                     reservationId: result.insertId
@@ -289,18 +349,118 @@ app.patch("/api/reservations/:id/status", (req, res) => {
         });
     }
 
-    const sql = "UPDATE reservations SET status = ? WHERE id = ?";
+    const getReservationSql = `
+        SELECT
+            name,
+            email,
+            reservation_date,
+            reservation_time,
+            guests
+        FROM reservations
+        WHERE id = ?
+    `;
 
-    db.query(sql, [status, id], (error, result) => {
-        if (error) {
-            console.error(error);
+    db.query(getReservationSql, [id], (selectError, reservationResults) => {
+        if (selectError) {
+            console.error(selectError);
+
             return res.status(500).json({
                 message: "Eroare la actualizarea statusului."
             });
         }
 
-        res.json({
-            message: "Statusul rezervării a fost actualizat."
+        if (reservationResults.length === 0) {
+            return res.status(404).json({
+                message: "Rezervarea nu a fost găsită."
+            });
+        }
+
+        const reservation = reservationResults[0];
+
+        const updateSql =
+            "UPDATE reservations SET status = ? WHERE id = ?";
+
+        db.query(updateSql, [status, id], async (updateError) => {
+            if (updateError) {
+                console.error(updateError);
+
+                return res.status(500).json({
+                    message: "Eroare la actualizarea statusului."
+                });
+            }
+
+            try {
+
+                if (status === "confirmed") {
+
+                    await sendEmail(
+                        reservation.email,
+                        "Rezervarea ta la Velmora a fost confirmată",
+                        `
+                            <h2>Rezervare confirmată</h2>
+
+                            <p>Bună, ${reservation.name}!</p>
+
+                            <p>
+                                Rezervarea ta pentru
+                                <strong>${formatReservationDate(reservation.reservation_date)}</strong>,
+                                ora <strong>${reservation.reservation_time.slice(0, 5)}</strong>,
+                                pentru <strong>${reservation.guests}</strong>
+                                a fost confirmată.
+                            </p>
+
+                            <p>
+                                Te așteptăm cu drag la Velmora!
+                            </p>
+
+                            <p>
+                                Cu drag,<br>
+                                Echipa Velmora
+                            </p>
+                        `
+                    );
+                }
+
+                if (status === "cancelled") {
+
+                    await sendEmail(
+                        reservation.email,
+                        "Actualizare rezervare Velmora",
+                        `
+                            <h2>Actualizare rezervare</h2>
+
+                            <p>Bună, ${reservation.name}!</p>
+
+                            <p>
+                                Ne pare rău, însă rezervarea pentru
+                                <strong>${formatReservationDate(reservation.reservation_date)}</strong>,
+                                ora <strong>${reservation.reservation_time.slice(0, 5)}</strong>
+                                nu a putut fi confirmată.
+                            </p>
+
+                            <p>
+                                Pentru alte opțiuni de rezervare,
+                                te rugăm să ne contactezi.
+                            </p>
+
+                            <p>
+                                Cu drag,<br>
+                                Echipa Velmora
+                            </p>
+                        `
+                    );
+                }
+
+            } catch (emailError) {
+                console.error(
+                    "Eroare la trimiterea emailului:",
+                    emailError
+                );
+            }
+
+            res.json({
+                message: "Statusul rezervării a fost actualizat."
+            });
         });
     });
 });

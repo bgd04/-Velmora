@@ -6,6 +6,17 @@ const adminLoginForm = document.getElementById("adminLoginForm");
 const loginError = document.getElementById("loginError");
 const logoutAdmin = document.getElementById("logoutAdmin");
 
+const todayReservationsCount = document.getElementById("todayReservationsCount");
+const pendingReservationsCount = document.getElementById("pendingReservationsCount");
+const eveningSeatsCount = document.getElementById("eveningSeatsCount");
+
+const deleteReservationsModal = document.getElementById("deleteReservationsModal");
+const cancelDeleteReservations = document.getElementById("cancelDeleteReservations");
+const confirmDeleteReservations = document.getElementById("confirmDeleteReservations");
+const deleteReservationsMessage = document.getElementById("deleteReservationsMessage");
+
+let reservationsPendingDelete = [];
+
 const reservationsTable = document.getElementById("reservationsTable");
 const clearReservations = document.getElementById("clearReservations");
 const reservationSearchInput = document.getElementById("reservationSearchInput");
@@ -172,6 +183,16 @@ function formatDate(value) {
     return new Date(value).toLocaleDateString("ro-RO");
 }
 
+function formatDateForCompare(dateString) {
+    const date = new Date(dateString);
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+}
+
 function formatDateTime(value) {
     if (!value) return "-";
     return new Date(value).toLocaleString("ro-RO");
@@ -199,10 +220,10 @@ function calculateOccupiedSeats(reservation) {
     let intervalEnd;
 
     if (reservationMinutes >= 20 * 60) {
-        intervalStart = 18 * 60;
+        intervalStart = 20 * 60;
         intervalEnd = 24 * 60;
     } else {
-        intervalStart = reservationMinutes - 120;
+        intervalStart = reservationMinutes;
         intervalEnd = reservationMinutes + 120;
     }
 
@@ -255,6 +276,7 @@ async function displayReservations() {
             : [];
 
         updateReservationStatusFilter();
+        updateAdminStats();
 
         renderReservations();
 
@@ -267,7 +289,7 @@ async function displayReservations() {
     }
 }
 
-function renderReservations() {
+function getFilteredReservations() {
     let reservations = [...reservationsCache];
 
     const searchValue = reservationSearchInput
@@ -278,28 +300,21 @@ function renderReservations() {
         ? reservationStatusFilter.value
         : "all";
 
+    const selectedDate = reservationDateFilter
+        ? reservationDateFilter.value
+        : "";
+
     if (selectedStatus !== "all") {
         reservations = reservations.filter(reservation =>
             reservation.status === selectedStatus
         );
     }
 
-    const selectedDate = reservationDateFilter
-        ? reservationDateFilter.value
-        : "";
-
     if (selectedDate) {
-        reservations = reservations.filter(reservation => {
-            const reservationDate =
-                new Date(reservation.reservation_date)
-                    .toISOString()
-                    .split("T")[0];
-
-            return reservationDate === selectedDate;
-        });
+        reservations = reservations.filter(reservation =>
+            formatDateForCompare(reservation.reservation_date) === selectedDate
+        );
     }
-
-    updateReservationStatusFilter();
 
     if (searchValue) {
         reservations = reservations.filter(reservation =>
@@ -311,6 +326,15 @@ function renderReservations() {
                 .includes(searchValue)
         );
     }
+
+    return reservations;
+}
+
+function renderReservations() {
+
+    updateReservationStatusFilter();
+
+    let reservations = getFilteredReservations();
 
     if (!Array.isArray(reservations) || reservations.length === 0) {
         reservationsTable.innerHTML = `
@@ -491,6 +515,63 @@ function updateReservationStatusFilter() {
     reservationStatusFilter.value = currentValue;
 }
 
+function timeToMinutes(time) {
+    const [hour, minute] = time.split(":").map(Number);
+    return hour * 60 + minute;
+}
+
+function updateAdminStats() {
+    if (
+        !todayReservationsCount ||
+        !pendingReservationsCount ||
+        !eveningSeatsCount
+    ) {
+        return;
+    }
+
+    const today = new Date().toISOString().split("T")[0];
+
+    const todayReservations = reservationsCache.filter(reservation =>
+        formatDateForCompare(reservation.reservation_date) === today &&
+        reservation.status === "confirmed"
+    );
+
+    const pendingReservations = reservationsCache.filter(reservation =>
+        reservation.status === "pending"
+    );
+
+    const eveningReservations = reservationsCache.filter(reservation => {
+        const reservationDate =
+            formatDateForCompare(reservation.reservation_date);
+
+        if (reservationDate !== today) {
+            return false;
+        }
+
+        if (reservation.status !== "confirmed") {
+            return false;
+        }
+
+        const reservationMinutes =
+            timeToMinutes(reservation.reservation_time);
+
+        return reservationMinutes >= 20 * 60;
+    });
+
+    const eveningSeats = eveningReservations.reduce((total, reservation) => {
+        return total + getGuestsNumber(reservation.guests);
+    }, 0);
+
+    todayReservationsCount.textContent =
+        todayReservations.length;
+
+    pendingReservationsCount.textContent =
+        pendingReservations.length;
+
+    eveningSeatsCount.textContent =
+        `${eveningSeats}/${RESTAURANT_CAPACITY}`;
+}
+
 if (reservationSearchInput) {
     reservationSearchInput.addEventListener("input", renderReservations);
 }
@@ -531,18 +612,61 @@ async function updateReservationStatus(id, status) {
 }
 
 if (clearReservations) {
-    clearReservations.addEventListener("click", async function() {
-        const confirmed = confirm("Sigur vrei să ștergi toate rezervările?");
+    clearReservations.addEventListener("click", function() {
+        const reservationsToDelete = getFilteredReservations();
 
-        if (!confirmed) {
+        if (reservationsToDelete.length === 0) {
+
+            deleteReservationsMessage.textContent =
+                "Nu există rezervări de șters pentru filtrele selectate.";
+
+            confirmDeleteReservations.style.display = "none";
+
+            deleteReservationsModal.classList.remove("hidden");
+
             return;
         }
 
-        await fetch("/api/reservations", {
-            method: "DELETE"
-        });
+        reservationsPendingDelete = reservationsToDelete;
 
-        displayReservations();
+        deleteReservationsMessage.textContent =
+            `Sigur dorești să ștergi ${reservationsToDelete.length} rezervări afișate? Această acțiune nu poate fi anulată.`;
+
+        deleteReservationsModal.classList.remove("hidden");
+    });
+}
+
+if (cancelDeleteReservations) {
+    cancelDeleteReservations.addEventListener("click", function() {
+
+        reservationsPendingDelete = [];
+
+        confirmDeleteReservations.style.display = "";
+
+        deleteReservationsModal.classList.add("hidden");
+    });
+}
+
+if (confirmDeleteReservations) {
+    confirmDeleteReservations.addEventListener("click", async function() {
+        try {
+            await Promise.all(
+                reservationsPendingDelete.map(reservation =>
+                    fetch(`/api/reservations/${reservation.id}`, {
+                        method: "DELETE"
+                    })
+                )
+            );
+
+            reservationsPendingDelete = [];
+            deleteReservationsModal.classList.add("hidden");
+
+            displayReservations();
+
+        } catch (error) {
+            console.error(error);
+            alert("Nu s-au putut șterge rezervările.");
+        }
     });
 }
 

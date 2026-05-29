@@ -362,7 +362,7 @@ a {
     padding: 12px;
     background: #141414;
     border: 1px solid rgba(201, 166, 107, 0.35);
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);0
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
 }
 
 .time-dropdown-menu.hidden {
@@ -1426,4 +1426,42 @@ a {
 .capacity-warning {
     color: #d97706;
     font-weight: 600;
+}
+
+
+
+
+.admin-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+    margin: 35px 0;
+}
+
+.admin-stat-card {
+    background: #141414;
+    border: 1px solid rgba(201, 166, 107, 0.25);
+    padding: 26px;
+}
+
+.admin-stat-card span {
+    display: block;
+    color: #C9A66B;
+    font-size: 13px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+}
+
+.admin-stat-card strong {
+    font-family: 'Playfair Display', serif;
+    color: #FFFFFF;
+    font-size: 38px;
+    font-weight: 600;
+}
+
+@media (max-width: 768px) {
+    .admin-stats {
+        grid-template-columns: 1fr;
+    }
 }
