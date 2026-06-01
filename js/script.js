@@ -415,3 +415,80 @@ if (reservationGuestsInput && guestsDropdown && guestsDropdownToggle && guestsDr
         }
     });
 }
+
+
+
+
+const homeMenuPreview = document.getElementById("homeMenuPreview");
+
+async function loadHomeMenuPreview() {
+    console.log("Home menu preview element:", homeMenuPreview);
+
+    if (!homeMenuPreview) {
+        return;
+    }
+
+    try {
+        console.log("Cer meniul din API...");
+
+        const response = await fetch("/api/menu");
+
+        console.log("Răspuns API meniu:", response.status);
+
+        const items = await response.json();
+
+        console.log("Produse primite:", items);
+
+        if (!Array.isArray(items) || items.length === 0) {
+            homeMenuPreview.innerHTML = `
+                <p class="empty-message">Meniul va fi disponibil în curând.</p>
+            `;
+            return;
+        }
+
+        const groupedItems = {};
+
+        items.forEach(item => {
+            if (!groupedItems[item.category]) {
+                groupedItems[item.category] = [];
+            }
+
+            groupedItems[item.category].push(item);
+        });
+
+        const firstThreeCategories =
+            Object.keys(groupedItems).slice(0, 3);
+
+        let html = "";
+
+        firstThreeCategories.forEach(category => {
+            const item = groupedItems[category][0];
+
+            html += `
+                <div class="menu-item">
+                    <div>
+                        <h3>
+                            <small class="menu-category-label">${category}</small>
+                            ${item.name}
+                        </h3>
+
+                        <p>${item.description}</p>
+                    </div>
+
+                    <span>${Number(item.price).toFixed(0)} RON</span>
+                </div>
+            `;
+        });
+
+        homeMenuPreview.innerHTML = html;
+
+    } catch (error) {
+        console.error("Eroare la încărcarea meniului pe homepage:", error);
+
+        homeMenuPreview.innerHTML = `
+            <p class="empty-message">Meniul nu a putut fi încărcat.</p>
+        `;
+    }
+}
+
+loadHomeMenuPreview();
