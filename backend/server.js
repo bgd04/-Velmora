@@ -1,3 +1,5 @@
+/* config initial si importuri */
+
 const express = require("express");
 const mysql = require("mysql2");
 const cors = require("cors");
@@ -12,6 +14,10 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "..")));
 
+
+
+/* config baza de date */
+
 const db = mysql.createPool({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
@@ -25,6 +31,10 @@ const db = mysql.createPool({
 
 console.log("Pool MySQL configurat.");
 
+
+
+/* config email */
+
 const emailTransporter = nodemailer.createTransport({
     host: process.env.EMAIL_HOST,
     port: Number(process.env.EMAIL_PORT),
@@ -36,7 +46,6 @@ const emailTransporter = nodemailer.createTransport({
 });
 
 async function sendEmail(to, subject, html) {
-
     if (
         !process.env.EMAIL_HOST ||
         !process.env.EMAIL_USER ||
@@ -45,24 +54,31 @@ async function sendEmail(to, subject, html) {
         return;
     }
 
-
     await emailTransporter.sendMail({
         from: process.env.EMAIL_FROM,
         to,
         subject,
         html
     });
-
 }
+
+
+
+/* functii de ajutor */
+
+const RESTAURANT_CAPACITY = 40;
 
 function formatReservationDate(date) {
     return new Intl.DateTimeFormat("ro-RO").format(new Date(date));
 }
 
-const RESTAURANT_CAPACITY = 40;
-
 function getGuestsNumber(guests) {
     return parseInt(guests, 10) || 0;
+}
+
+function timeToMinutes(time) {
+    const [hour, minute] = time.split(":").map(Number);
+    return hour * 60 + minute;
 }
 
 function getReservationInterval(time) {
@@ -82,14 +98,17 @@ function getReservationInterval(time) {
     };
 }
 
-function timeToMinutes(time) {
-    const [hour, minute] = time.split(":").map(Number);
-    return hour * 60 + minute;
-}
+
+
+/* ruta pagina principala */
 
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "..", "index.html"));
 });
+
+
+
+/* disponibilitate rezervari */
 
 app.get("/api/availability", (req, res) => {
     const { date, guests } = req.query;
@@ -161,6 +180,10 @@ app.get("/api/availability", (req, res) => {
         });
     });
 });
+
+
+
+/* rezervari - creare */
 
 app.post("/api/reservations", (req, res) => {
     const { name, email, phone, date, time, guests, message } = req.body;
@@ -283,6 +306,7 @@ app.get("/api/reservations", (req, res) => {
     db.query(sql, (error, results) => {
         if (error) {
             console.error(error);
+
             return res.status(500).json({
                 message: "Eroare la citirea rezervărilor."
             });
@@ -292,50 +316,9 @@ app.get("/api/reservations", (req, res) => {
     });
 });
 
-app.delete("/api/reservations", (req, res) => {
-    db.query("DELETE FROM reservations", (error) => {
-        if (error) {
-            console.error(error);
-            return res.status(500).json({
-                message: "Eroare la ștergerea rezervărilor."
-            });
-        }
 
-        res.json({
-            message: "Toate rezervările au fost șterse."
-        });
-    });
-});
 
-app.post("/api/admin/login", (req, res) => {
-    const { username, password } = req.body;
-
-    const sql = "SELECT * FROM admins WHERE username = ? AND password = ?";
-
-    db.query(sql, [username, password], (error, results) => {
-        if (error) {
-            console.error(error);
-            return res.status(500).json({
-                message: "Eroare la autentificare."
-            });
-        }
-
-        if (results.length === 0) {
-            return res.status(401).json({
-                message: "Date de autentificare incorecte."
-            });
-        }
-
-        res.json({
-            message: "Autentificare reușită.",
-            admin: {
-                id: results[0].id,
-                username: results[0].username,
-                role: results[0].role
-            }
-        });
-    });
-});
+/* status rezervari - stergere */
 
 app.patch("/api/reservations/:id/status", (req, res) => {
     const { id } = req.params;
@@ -390,9 +373,7 @@ app.patch("/api/reservations/:id/status", (req, res) => {
             }
 
             try {
-
                 if (status === "confirmed") {
-
                     await sendEmail(
                         reservation.email,
                         "Rezervarea ta la Velmora a fost confirmată",
@@ -422,7 +403,6 @@ app.patch("/api/reservations/:id/status", (req, res) => {
                 }
 
                 if (status === "cancelled") {
-
                     await sendEmail(
                         reservation.email,
                         "Actualizare rezervare Velmora",
@@ -465,6 +445,22 @@ app.patch("/api/reservations/:id/status", (req, res) => {
     });
 });
 
+app.delete("/api/reservations", (req, res) => {
+    db.query("DELETE FROM reservations", (error) => {
+        if (error) {
+            console.error(error);
+
+            return res.status(500).json({
+                message: "Eroare la ștergerea rezervărilor."
+            });
+        }
+
+        res.json({
+            message: "Toate rezervările au fost șterse."
+        });
+    });
+});
+
 app.delete("/api/reservations/:id", (req, res) => {
     const { id } = req.params;
 
@@ -485,27 +481,63 @@ app.delete("/api/reservations/:id", (req, res) => {
     });
 });
 
-app.get("/api/menu", (req, res) => {
 
+
+/* login admin */
+
+app.post("/api/admin/login", (req, res) => {
+    const { username, password } = req.body;
+
+    const sql = "SELECT * FROM admins WHERE username = ? AND password = ?";
+
+    db.query(sql, [username, password], (error, results) => {
+        if (error) {
+            console.error(error);
+
+            return res.status(500).json({
+                message: "Eroare la autentificare."
+            });
+        }
+
+        if (results.length === 0) {
+            return res.status(401).json({
+                message: "Date de autentificare incorecte."
+            });
+        }
+
+        res.json({
+            message: "Autentificare reușită.",
+            admin: {
+                id: results[0].id,
+                username: results[0].username,
+                role: results[0].role
+            }
+        });
+    });
+});
+
+
+
+/* meniu adaugare - afisare */
+
+app.get("/api/menu", (req, res) => {
     const sql = `
-    SELECT *
-    FROM menu_items
-    ORDER BY
-        CASE category
-            WHEN 'Startere' THEN 1
-            WHEN 'Fel principal' THEN 2
-            WHEN 'Desert' THEN 3
-            WHEN 'Vinuri' THEN 4
-            ELSE 99
-        END,
-        category,
-        id
-`;
+        SELECT *
+        FROM menu_items
+        ORDER BY
+            CASE category
+                WHEN 'Startere' THEN 1
+                WHEN 'Fel principal' THEN 2
+                WHEN 'Desert' THEN 3
+                WHEN 'Vinuri' THEN 4
+                ELSE 99
+            END,
+            category,
+            id
+    `;
 
     db.query(sql, (error, results) => {
-
         if (error) {
-
             console.error(error);
 
             return res.status(500).json({
@@ -518,7 +550,6 @@ app.get("/api/menu", (req, res) => {
 });
 
 app.post("/api/menu", (req, res) => {
-
     const {
         category,
         name,
@@ -526,16 +557,9 @@ app.post("/api/menu", (req, res) => {
         price
     } = req.body;
 
-    if (
-        !category ||
-        !name ||
-        !description ||
-        !price
-    ) {
-
+    if (!category || !name || !description || !price) {
         return res.status(400).json({
-            message:
-                "Toate câmpurile sunt obligatorii."
+            message: "Toate câmpurile sunt obligatorii."
         });
     }
 
@@ -559,9 +583,7 @@ app.post("/api/menu", (req, res) => {
             price
         ],
         (error, result) => {
-
             if (error) {
-
                 console.error(error);
 
                 return res.status(500).json({
@@ -578,6 +600,10 @@ app.post("/api/menu", (req, res) => {
         }
     );
 });
+
+
+
+/* meniu editare - stergere */
 
 app.put("/api/menu/:id", (req, res) => {
     const { id } = req.params;
@@ -598,6 +624,7 @@ app.put("/api/menu/:id", (req, res) => {
     db.query(sql, [category, name, description, price, id], (error) => {
         if (error) {
             console.error(error);
+
             return res.status(500).json({
                 message: "Eroare la actualizarea preparatului."
             });
@@ -617,6 +644,7 @@ app.delete("/api/menu/:id", (req, res) => {
     db.query(sql, [id], (error) => {
         if (error) {
             console.error(error);
+
             return res.status(500).json({
                 message: "Eroare la ștergerea preparatului."
             });
@@ -627,6 +655,10 @@ app.delete("/api/menu/:id", (req, res) => {
         });
     });
 });
+
+
+
+/* start server */
 
 const PORT = process.env.PORT || 3000;
 

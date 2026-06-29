@@ -1,5 +1,102 @@
+/* constante rezervari */
+
 const reservationForm = document.getElementById("reservationForm");
 const reservationSuccess = document.getElementById("reservationSuccess");
+
+const reservationDateInput = document.getElementById("reservationDate");
+const reservationTimeInput = document.getElementById("reservationTime");
+const reservationGuestsInput = document.getElementById("reservationGuests");
+
+
+
+/* constante calendar rezervari */
+
+const dateDropdown = document.getElementById("dateDropdown");
+const dateDropdownToggle = document.getElementById("dateDropdownToggle");
+const dateDropdownMenu = document.getElementById("dateDropdownMenu");
+const currentMonthLabel = document.getElementById("currentMonthLabel");
+const dateCalendarDays = document.getElementById("dateCalendarDays");
+const prevMonth = document.getElementById("prevMonth");
+const nextMonth = document.getElementById("nextMonth");
+
+
+
+/* constante ora */
+
+const timeDropdown = document.getElementById("timeDropdown");
+const timeDropdownToggle = document.getElementById("timeDropdownToggle");
+const timeDropdownMenu = document.getElementById("timeDropdownMenu");
+
+
+
+/* constante numar persoane */
+
+const guestsDropdown = document.getElementById("guestsDropdown");
+const guestsDropdownToggle = document.getElementById("guestsDropdownToggle");
+const guestsDropdownMenu = document.getElementById("guestsDropdownMenu");
+
+
+
+/* constante meniu public */
+
+const publicMenuContainer = document.getElementById("publicMenuContainer");
+const homeMenuPreview = document.getElementById("homeMenuPreview");
+
+
+
+/* config calendar */
+
+let calendarDate = new Date();
+
+const monthNames = [
+    "Ianuarie",
+    "Februarie",
+    "Martie",
+    "Aprilie",
+    "Mai",
+    "Iunie",
+    "Iulie",
+    "August",
+    "Septembrie",
+    "Octombrie",
+    "Noiembrie",
+    "Decembrie"
+];
+
+
+
+/* functii de ajutor */
+
+function formatDateForInput(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+}
+
+function formatDateForDisplay(date) {
+    return date.toLocaleDateString("ro-RO", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+    });
+}
+
+function isPastDate(date) {
+    const today = new Date();
+
+    today.setHours(0, 0, 0, 0);
+
+    const checkedDate = new Date(date);
+    checkedDate.setHours(0, 0, 0, 0);
+
+    return checkedDate < today;
+}
+
+
+
+/* trimitere rezervare */
 
 if (reservationForm && reservationSuccess) {
     reservationForm.addEventListener("submit", async function(event) {
@@ -32,6 +129,7 @@ if (reservationForm && reservationSuccess) {
             } else {
                 alert("A apărut o eroare la salvarea rezervării.");
             }
+
         } catch (error) {
             console.error(error);
             alert("Serverul nu răspunde.");
@@ -39,7 +137,9 @@ if (reservationForm && reservationSuccess) {
     });
 }
 
-const publicMenuContainer = document.getElementById("publicMenuContainer");
+
+
+/* meniu public */
 
 if (publicMenuContainer) {
     loadPublicMenu();
@@ -112,48 +212,80 @@ async function loadPublicMenu() {
 
 
 
+/* meniu pagina principala */
 
+if (homeMenuPreview) {
+    loadHomeMenuPreview();
+}
 
-const reservationTimeInput = document.getElementById("reservationTime");
-const timeDropdown = document.getElementById("timeDropdown");
-const timeDropdownToggle = document.getElementById("timeDropdownToggle");
-const timeDropdownMenu = document.getElementById("timeDropdownMenu");
+async function loadHomeMenuPreview() {
+    try {
+        const response = await fetch("/api/menu");
+        const items = await response.json();
 
-if (reservationTimeInput && timeDropdownToggle && timeDropdownMenu) {
-    timeDropdownToggle.addEventListener("click", function() {
-        timeDropdownMenu.classList.toggle("hidden");
-    });
+        if (!Array.isArray(items) || items.length === 0) {
+            homeMenuPreview.innerHTML = `
+                <p class="empty-message">
+                    Meniul va fi disponibil în curând.
+                </p>
+            `;
+            return;
+        }
 
-    timeDropdownMenu.querySelectorAll("button").forEach(button => {
-        button.addEventListener("click", function() {
-            if (button.disabled) {
-                return;
+        const groupedItems = {};
+
+        items.forEach(item => {
+            if (!groupedItems[item.category]) {
+                groupedItems[item.category] = [];
             }
 
-            const selectedTime = button.dataset.time;
-
-            reservationTimeInput.value = selectedTime;
-            timeDropdownToggle.textContent = selectedTime;
-
-            timeDropdownMenu.querySelectorAll("button").forEach(btn => {
-                btn.classList.remove("active");
-            });
-
-            button.classList.add("active");
-            timeDropdownMenu.classList.add("hidden");
+            groupedItems[item.category].push(item);
         });
-    });
 
-    document.addEventListener("click", function(event) {
-        if (!timeDropdown.contains(event.target)) {
-            timeDropdownMenu.classList.add("hidden");
-        }
-    });
+        const firstThreeCategories =
+            Object.keys(groupedItems).slice(0, 3);
+
+        let html = "";
+
+        firstThreeCategories.forEach(category => {
+            const item = groupedItems[category][0];
+
+            html += `
+                <div class="menu-item">
+                    <div>
+                        <h3>
+                            <small class="menu-category-label">
+                                ${category}
+                            </small>
+                            ${item.name}
+                        </h3>
+
+                        <p>${item.description}</p>
+                    </div>
+
+                    <span>
+                        ${Number(item.price).toFixed(0)} RON
+                    </span>
+                </div>
+            `;
+        });
+
+        homeMenuPreview.innerHTML = html;
+
+    } catch (error) {
+        console.error("Eroare la încărcarea meniului pe homepage:", error);
+
+        homeMenuPreview.innerHTML = `
+            <p class="empty-message">
+                Meniul nu a putut fi încărcat.
+            </p>
+        `;
+    }
 }
 
 
 
-
+/* disponibilitate intervale orare */
 
 async function updateAvailableTimeSlots() {
     if (
@@ -224,50 +356,7 @@ async function updateAvailableTimeSlots() {
 
 
 
-
-
-
-const reservationDateInput = document.getElementById("reservationDate");
-const dateDropdown = document.getElementById("dateDropdown");
-const dateDropdownToggle = document.getElementById("dateDropdownToggle");
-const dateDropdownMenu = document.getElementById("dateDropdownMenu");
-const currentMonthLabel = document.getElementById("currentMonthLabel");
-const dateCalendarDays = document.getElementById("dateCalendarDays");
-const prevMonth = document.getElementById("prevMonth");
-const nextMonth = document.getElementById("nextMonth");
-
-let calendarDate = new Date();
-
-const monthNames = [
-    "Ianuarie",
-    "Februarie",
-    "Martie",
-    "Aprilie",
-    "Mai",
-    "Iunie",
-    "Iulie",
-    "August",
-    "Septembrie",
-    "Octombrie",
-    "Noiembrie",
-    "Decembrie"
-];
-
-function formatDateForInput(date) {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-
-    return `${year}-${month}-${day}`;
-}
-
-function formatDateForDisplay(date) {
-    return date.toLocaleDateString("ro-RO", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric"
-    });
-}
+/* calendar rezervari */
 
 function renderCalendar() {
     if (!dateCalendarDays || !currentMonthLabel) {
@@ -292,6 +381,7 @@ function renderCalendar() {
 
     for (let i = 1; i < startDay; i++) {
         const emptyCell = document.createElement("span");
+
         emptyCell.classList.add("empty-day");
         dateCalendarDays.appendChild(emptyCell);
     }
@@ -309,7 +399,10 @@ function renderCalendar() {
             button.classList.add("disabled");
         }
 
-        if (reservationDateInput && reservationDateInput.value === button.dataset.date) {
+        if (
+            reservationDateInput &&
+            reservationDateInput.value === button.dataset.date
+        ) {
             button.classList.add("active");
         }
 
@@ -317,6 +410,7 @@ function renderCalendar() {
             if (button.disabled) {
                 return;
             }
+
             reservationDateInput.value = button.dataset.date;
             dateDropdownToggle.textContent = formatDateForDisplay(date);
 
@@ -365,28 +459,50 @@ if (
 
 
 
+/* ora rezervari */
 
-function isPastDate(date) {
-    const today = new Date();
+if (reservationTimeInput && timeDropdownToggle && timeDropdownMenu) {
+    timeDropdownToggle.addEventListener("click", function() {
+        timeDropdownMenu.classList.toggle("hidden");
+    });
 
-    today.setHours(0, 0, 0, 0);
+    timeDropdownMenu.querySelectorAll("button").forEach(button => {
+        button.addEventListener("click", function() {
+            if (button.disabled) {
+                return;
+            }
 
-    const checkedDate = new Date(date);
-    checkedDate.setHours(0, 0, 0, 0);
+            const selectedTime = button.dataset.time;
 
-    return checkedDate < today;
+            reservationTimeInput.value = selectedTime;
+            timeDropdownToggle.textContent = selectedTime;
+
+            timeDropdownMenu.querySelectorAll("button").forEach(btn => {
+                btn.classList.remove("active");
+            });
+
+            button.classList.add("active");
+            timeDropdownMenu.classList.add("hidden");
+        });
+    });
+
+    document.addEventListener("click", function(event) {
+        if (!timeDropdown.contains(event.target)) {
+            timeDropdownMenu.classList.add("hidden");
+        }
+    });
 }
 
 
 
+/* numar persoane rezervari */
 
-
-const reservationGuestsInput = document.getElementById("reservationGuests");
-const guestsDropdown = document.getElementById("guestsDropdown");
-const guestsDropdownToggle = document.getElementById("guestsDropdownToggle");
-const guestsDropdownMenu = document.getElementById("guestsDropdownMenu");
-
-if (reservationGuestsInput && guestsDropdown && guestsDropdownToggle && guestsDropdownMenu) {
+if (
+    reservationGuestsInput &&
+    guestsDropdown &&
+    guestsDropdownToggle &&
+    guestsDropdownMenu
+) {
     guestsDropdownToggle.addEventListener("click", function() {
         guestsDropdownMenu.classList.toggle("hidden");
     });
@@ -415,80 +531,3 @@ if (reservationGuestsInput && guestsDropdown && guestsDropdownToggle && guestsDr
         }
     });
 }
-
-
-
-
-const homeMenuPreview = document.getElementById("homeMenuPreview");
-
-async function loadHomeMenuPreview() {
-    console.log("Home menu preview element:", homeMenuPreview);
-
-    if (!homeMenuPreview) {
-        return;
-    }
-
-    try {
-        console.log("Cer meniul din API...");
-
-        const response = await fetch("/api/menu");
-
-        console.log("Răspuns API meniu:", response.status);
-
-        const items = await response.json();
-
-        console.log("Produse primite:", items);
-
-        if (!Array.isArray(items) || items.length === 0) {
-            homeMenuPreview.innerHTML = `
-                <p class="empty-message">Meniul va fi disponibil în curând.</p>
-            `;
-            return;
-        }
-
-        const groupedItems = {};
-
-        items.forEach(item => {
-            if (!groupedItems[item.category]) {
-                groupedItems[item.category] = [];
-            }
-
-            groupedItems[item.category].push(item);
-        });
-
-        const firstThreeCategories =
-            Object.keys(groupedItems).slice(0, 3);
-
-        let html = "";
-
-        firstThreeCategories.forEach(category => {
-            const item = groupedItems[category][0];
-
-            html += `
-                <div class="menu-item">
-                    <div>
-                        <h3>
-                            <small class="menu-category-label">${category}</small>
-                            ${item.name}
-                        </h3>
-
-                        <p>${item.description}</p>
-                    </div>
-
-                    <span>${Number(item.price).toFixed(0)} RON</span>
-                </div>
-            `;
-        });
-
-        homeMenuPreview.innerHTML = html;
-
-    } catch (error) {
-        console.error("Eroare la încărcarea meniului pe homepage:", error);
-
-        homeMenuPreview.innerHTML = `
-            <p class="empty-message">Meniul nu a putut fi încărcat.</p>
-        `;
-    }
-}
-
-loadHomeMenuPreview();

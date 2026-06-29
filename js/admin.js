@@ -1,66 +1,166 @@
+/* config */
+
 const RESTAURANT_CAPACITY = 40;
 
-const adminLoginSection = document.getElementById("adminLoginSection");
-const adminPanel = document.getElementById("adminPanel");
-const adminLoginForm = document.getElementById("adminLoginForm");
-const loginError = document.getElementById("loginError");
-const logoutAdmin = document.getElementById("logoutAdmin");
 
-const todayReservationsCount = document.getElementById("todayReservationsCount");
-const pendingReservationsCount = document.getElementById("pendingReservationsCount");
-const eveningSeatsCount = document.getElementById("eveningSeatsCount");
 
-const deleteReservationsModal = document.getElementById("deleteReservationsModal");
-const cancelDeleteReservations = document.getElementById("cancelDeleteReservations");
-const confirmDeleteReservations = document.getElementById("confirmDeleteReservations");
-const deleteReservationsMessage = document.getElementById("deleteReservationsMessage");
+/* constante login */
 
-let reservationsPendingDelete = [];
+const adminLoginSection =
+    document.getElementById("adminLoginSection");
 
-const reservationsTable = document.getElementById("reservationsTable");
-const clearReservations = document.getElementById("clearReservations");
-const reservationSearchInput = document.getElementById("reservationSearchInput");
-const reservationStatusFilter = document.getElementById("reservationStatusFilter");
-const reservationDateFilter = document.getElementById("reservationDateFilter");
+const adminPanel =
+    document.getElementById("adminPanel");
+
+const adminLoginForm =
+    document.getElementById("adminLoginForm");
+
+const loginError =
+    document.getElementById("loginError");
+
+const logoutAdmin =
+    document.getElementById("logoutAdmin");
+
+
+
+/* constarnte stats admin */
+
+const todayReservationsCount =
+    document.getElementById("todayReservationsCount");
+
+const pendingReservationsCount =
+    document.getElementById("pendingReservationsCount");
+
+const eveningSeatsCount =
+    document.getElementById("eveningSeatsCount");
+
+
+
+/* constante rezervari */
+
+const reservationsTable =
+    document.getElementById("reservationsTable");
+
+const clearReservations =
+    document.getElementById("clearReservations");
+
+const reservationSearchInput =
+    document.getElementById("reservationSearchInput");
+
+const reservationStatusFilter =
+    document.getElementById("reservationStatusFilter");
+
+const reservationDateFilter =
+    document.getElementById("reservationDateFilter");
+
+
+
+/* constante calendar admin */
+
+const adminDateDropdown =
+    document.getElementById("adminDateDropdown");
+
+const adminDateDropdownToggle =
+    document.getElementById("adminDateDropdownToggle");
+
+const adminDateDropdownMenu =
+    document.getElementById("adminDateDropdownMenu");
+
+const adminCurrentMonthLabel =
+    document.getElementById("adminCurrentMonthLabel");
+
+const adminDateCalendarDays =
+    document.getElementById("adminDateCalendarDays");
+
+const adminPrevMonth =
+    document.getElementById("adminPrevMonth");
+
+const adminNextMonth =
+    document.getElementById("adminNextMonth");
+
+const adminClearDate =
+    document.getElementById("adminClearDate");
+
+const adminTodayDate =
+    document.getElementById("adminTodayDate");
+
+
+
+/* constante meniu admin */
+
+const menuItemForm =
+    document.getElementById("menuItemForm");
+
+const menuItemsTable =
+    document.getElementById("menuItemsTable");
+
+const menuSubmitButton =
+    document.getElementById("menuSubmitButton");
+
+const cancelMenuEdit =
+    document.getElementById("cancelMenuEdit");
+
+const menuSearchInput =
+    document.getElementById("menuSearchInput");
+
+const menuCategoryFilter =
+    document.getElementById("menuCategoryFilter");
+
+const menuFeedback =
+    document.getElementById("menuFeedback");
+
+
+
+/* constante actiuni */
+
+const deleteModal =
+    document.getElementById("deleteModal");
+
+const cancelDelete =
+    document.getElementById("cancelDelete");
+
+const confirmDelete =
+    document.getElementById("confirmDelete");
+
+const deleteMenuModal =
+    document.getElementById("deleteMenuModal");
+
+const cancelMenuDelete =
+    document.getElementById("cancelMenuDelete");
+
+const confirmMenuDelete =
+    document.getElementById("confirmMenuDelete");
+
+const deleteReservationsModal =
+    document.getElementById("deleteReservationsModal");
+
+const cancelDeleteReservations =
+    document.getElementById("cancelDeleteReservations");
+
+const confirmDeleteReservations =
+    document.getElementById("confirmDeleteReservations");
+
+const deleteReservationsMessage =
+    document.getElementById("deleteReservationsMessage");
+
+
+
+/* variabile */
 
 let reservationsCache = [];
-
-const adminDateDropdown = document.getElementById("adminDateDropdown");
-const adminDateDropdownToggle = document.getElementById("adminDateDropdownToggle");
-const adminDateDropdownMenu = document.getElementById("adminDateDropdownMenu");
-const adminCurrentMonthLabel = document.getElementById("adminCurrentMonthLabel");
-const adminDateCalendarDays = document.getElementById("adminDateCalendarDays");
-const adminPrevMonth = document.getElementById("adminPrevMonth");
-const adminNextMonth = document.getElementById("adminNextMonth");
-const adminClearDate = document.getElementById("adminClearDate");
-const adminTodayDate = document.getElementById("adminTodayDate");
+let menuItemsCache = [];
 
 let adminCalendarDate = new Date();
 
-const menuItemForm = document.getElementById("menuItemForm");
-const menuItemsTable = document.getElementById("menuItemsTable");
-
-const menuSubmitButton = document.getElementById("menuSubmitButton");
-const cancelMenuEdit = document.getElementById("cancelMenuEdit");
-
-const menuSearchInput = document.getElementById("menuSearchInput");
-const menuCategoryFilter = document.getElementById("menuCategoryFilter");
-const menuFeedback = document.getElementById("menuFeedback");
-
-let menuItemsCache = [];
-
-const deleteModal = document.getElementById("deleteModal");
-const cancelDelete = document.getElementById("cancelDelete");
-const confirmDelete = document.getElementById("confirmDelete");
-
-const deleteMenuModal = document.getElementById("deleteMenuModal");
-const cancelMenuDelete = document.getElementById("cancelMenuDelete");
-const confirmMenuDelete = document.getElementById("confirmMenuDelete");
+let reservationToDelete = null;
+let reservationsPendingDelete = [];
 
 let menuItemToDelete = null;
-
-let reservationToDelete = null;
 let menuItemToEdit = null;
+
+
+
+/* config status */
 
 const statusLabels = {
     pending: "În așteptare",
@@ -68,14 +168,16 @@ const statusLabels = {
     cancelled: "Anulată"
 };
 
-function showMenuFeedback(message) {
 
+
+/* feedback menu */
+
+function showMenuFeedback(message) {
     if (!menuFeedback) {
         return;
     }
 
     menuFeedback.textContent = message;
-
     menuFeedback.classList.remove("hidden");
 
     setTimeout(() => {
@@ -83,12 +185,15 @@ function showMenuFeedback(message) {
     }, 3000);
 }
 
+
+
+/* login si permisiuni admin */
+
 function getAdminRole() {
     return localStorage.getItem("velmora_admin_role");
 }
 
 function applyRolePermissions() {
-
     const menuAdminSection =
         document.getElementById("menuAdminSection");
 
@@ -110,7 +215,9 @@ function isAdminLoggedIn() {
 function showAdminPanel() {
     adminLoginSection.classList.add("hidden");
     adminPanel.classList.remove("hidden");
+
     applyRolePermissions();
+
     displayReservations();
     displayMenuItems();
 }
@@ -149,13 +256,14 @@ if (adminLoginForm) {
             const data = await response.json();
 
             if (!response.ok) {
-                loginError.textContent = data.message || "Autentificare eșuată.";
+                loginError.textContent =
+                    data.message || "Autentificare eșuată.";
                 return;
             }
 
             localStorage.setItem("velmora_admin_logged", "true");
             localStorage.setItem("velmora_admin_username", data.admin.username);
-            localStorage.setItem("velmora_admin_role",data.admin.role);
+            localStorage.setItem("velmora_admin_role", data.admin.role);
 
             loginError.textContent = "";
             adminLoginForm.reset();
@@ -174,12 +282,18 @@ if (logoutAdmin) {
         localStorage.removeItem("velmora_admin_logged");
         localStorage.removeItem("velmora_admin_username");
         localStorage.removeItem("velmora_admin_role");
+
         showLoginForm();
     });
 }
 
+
+
+/* functii de ajutor */
+
 function formatDate(value) {
     if (!value) return "-";
+
     return new Date(value).toLocaleDateString("ro-RO");
 }
 
@@ -187,14 +301,17 @@ function formatDateForCompare(dateString) {
     const date = new Date(dateString);
 
     const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
+    const month =
+        String(date.getMonth() + 1).padStart(2, "0");
+    const day =
+        String(date.getDate()).padStart(2, "0");
 
     return `${year}-${month}-${day}`;
 }
 
 function formatDateTime(value) {
     if (!value) return "-";
+
     return new Date(value).toLocaleString("ro-RO");
 }
 
@@ -202,8 +319,17 @@ function getGuestsNumber(guests) {
     return parseInt(guests, 10) || 0;
 }
 
-function calculateOccupiedSeats(reservation) {
+function timeToMinutes(time) {
+    const [hour, minute] = time.split(":").map(Number);
 
+    return hour * 60 + minute;
+}
+
+
+
+/* capacitate rezervari */
+
+function calculateOccupiedSeats(reservation) {
     const reservationDate =
         reservation.reservation_date;
 
@@ -230,15 +356,11 @@ function calculateOccupiedSeats(reservation) {
     let occupiedSeats = 0;
 
     reservationsCache.forEach(item => {
-
         if (item.status !== "confirmed") {
             return;
         }
 
-        if (
-            item.reservation_date !==
-            reservationDate
-        ) {
+        if (item.reservation_date !== reservationDate) {
             return;
         }
 
@@ -262,6 +384,10 @@ function calculateOccupiedSeats(reservation) {
     return occupiedSeats;
 }
 
+
+
+/* rezervari */
+
 async function displayReservations() {
     if (!isAdminLoggedIn()) {
         return;
@@ -284,7 +410,9 @@ async function displayReservations() {
         console.error(error);
 
         reservationsTable.innerHTML = `
-            <p class="empty-message">Eroare la încărcarea rezervărilor.</p>
+            <p class="empty-message">
+                Eroare la încărcarea rezervărilor.
+            </p>
         `;
     }
 }
@@ -331,14 +459,15 @@ function getFilteredReservations() {
 }
 
 function renderReservations() {
-
     updateReservationStatusFilter();
 
     let reservations = getFilteredReservations();
 
     if (!Array.isArray(reservations) || reservations.length === 0) {
         reservationsTable.innerHTML = `
-            <p class="empty-message">Nu există rezervări pentru filtrul selectat.</p>
+            <p class="empty-message">
+                Nu există rezervări pentru filtrul selectat.
+            </p>
         `;
         return;
     }
@@ -348,9 +477,17 @@ function renderReservations() {
     `;
 
     reservations.forEach(reservation => {
-        const occupiedSeats = calculateOccupiedSeats(reservation);
-        const seatsAfterConfirmation = reservation.status === "pending" ? occupiedSeats + getGuestsNumber(reservation.guests) : occupiedSeats;
-        const exceedsCapacity = reservation.status === "pending" && seatsAfterConfirmation > RESTAURANT_CAPACITY;
+        const occupiedSeats =
+            calculateOccupiedSeats(reservation);
+
+        const seatsAfterConfirmation =
+            reservation.status === "pending"
+                ? occupiedSeats + getGuestsNumber(reservation.guests)
+                : occupiedSeats;
+
+        const exceedsCapacity =
+            reservation.status === "pending" &&
+            seatsAfterConfirmation > RESTAURANT_CAPACITY;
 
         let actionButtons = `
             <div class="reservation-status-actions">
@@ -436,7 +573,9 @@ function renderReservations() {
                 </div>
 
                 <div class="reservation-card-footer">
-                    <small>Primită la: ${formatDateTime(reservation.created_at)}</small>
+                    <small>
+                        Primită la: ${formatDateTime(reservation.created_at)}
+                    </small>
 
                     ${actionButtons}
 
@@ -458,12 +597,17 @@ function renderReservations() {
     reservationsTable.innerHTML = html;
 }
 
+
+
+/* statistici si filtre rezervari */
+
 function updateReservationStatusFilter() {
     if (!reservationStatusFilter) {
         return;
     }
 
-    const currentValue = reservationStatusFilter.value || "all";
+    const currentValue =
+        reservationStatusFilter.value || "all";
 
     const selectedDate = reservationDateFilter
         ? reservationDateFilter.value
@@ -515,11 +659,6 @@ function updateReservationStatusFilter() {
     reservationStatusFilter.value = currentValue;
 }
 
-function timeToMinutes(time) {
-    const [hour, minute] = time.split(":").map(Number);
-    return hour * 60 + minute;
-}
-
 function updateAdminStats() {
     if (
         !todayReservationsCount ||
@@ -529,38 +668,43 @@ function updateAdminStats() {
         return;
     }
 
-    const today = new Date().toISOString().split("T")[0];
+    const today =
+        new Date().toISOString().split("T")[0];
 
-    const todayReservations = reservationsCache.filter(reservation =>
-        formatDateForCompare(reservation.reservation_date) === today &&
-        reservation.status === "confirmed"
-    );
+    const todayReservations =
+        reservationsCache.filter(reservation =>
+            formatDateForCompare(reservation.reservation_date) === today &&
+            reservation.status === "confirmed"
+        );
 
-    const pendingReservations = reservationsCache.filter(reservation =>
-        reservation.status === "pending"
-    );
+    const pendingReservations =
+        reservationsCache.filter(reservation =>
+            reservation.status === "pending"
+        );
 
-    const eveningReservations = reservationsCache.filter(reservation => {
-        const reservationDate =
-            formatDateForCompare(reservation.reservation_date);
+    const eveningReservations =
+        reservationsCache.filter(reservation => {
+            const reservationDate =
+                formatDateForCompare(reservation.reservation_date);
 
-        if (reservationDate !== today) {
-            return false;
-        }
+            if (reservationDate !== today) {
+                return false;
+            }
 
-        if (reservation.status !== "confirmed") {
-            return false;
-        }
+            if (reservation.status !== "confirmed") {
+                return false;
+            }
 
-        const reservationMinutes =
-            timeToMinutes(reservation.reservation_time);
+            const reservationMinutes =
+                timeToMinutes(reservation.reservation_time);
 
-        return reservationMinutes >= 20 * 60;
-    });
+            return reservationMinutes >= 20 * 60;
+        });
 
-    const eveningSeats = eveningReservations.reduce((total, reservation) => {
-        return total + getGuestsNumber(reservation.guests);
-    }, 0);
+    const eveningSeats =
+        eveningReservations.reduce((total, reservation) => {
+            return total + getGuestsNumber(reservation.guests);
+        }, 0);
 
     todayReservationsCount.textContent =
         todayReservations.length;
@@ -572,17 +716,34 @@ function updateAdminStats() {
         `${eveningSeats}/${RESTAURANT_CAPACITY}`;
 }
 
+
+
+/* event filtre rezervari */
+
 if (reservationSearchInput) {
-    reservationSearchInput.addEventListener("input", renderReservations);
+    reservationSearchInput.addEventListener(
+        "input",
+        renderReservations
+    );
 }
 
 if (reservationStatusFilter) {
-    reservationStatusFilter.addEventListener("change", renderReservations);
+    reservationStatusFilter.addEventListener(
+        "change",
+        renderReservations
+    );
 }
 
 if (reservationDateFilter) {
-    reservationDateFilter.addEventListener("change", renderReservations);
+    reservationDateFilter.addEventListener(
+        "change",
+        renderReservations
+    );
 }
+
+
+
+/* actualizare status rezervari */
 
 async function updateReservationStatus(id, status) {
     try {
@@ -611,17 +772,19 @@ async function updateReservationStatus(id, status) {
     }
 }
 
+
+
+/* stergere rezervari dupa filtre */
+
 if (clearReservations) {
     clearReservations.addEventListener("click", function() {
         const reservationsToDelete = getFilteredReservations();
 
         if (reservationsToDelete.length === 0) {
-
             deleteReservationsMessage.textContent =
                 "Nu există rezervări de șters pentru filtrele selectate.";
 
             confirmDeleteReservations.style.display = "none";
-
             deleteReservationsModal.classList.remove("hidden");
 
             return;
@@ -638,11 +801,9 @@ if (clearReservations) {
 
 if (cancelDeleteReservations) {
     cancelDeleteReservations.addEventListener("click", function() {
-
         reservationsPendingDelete = [];
 
         confirmDeleteReservations.style.display = "";
-
         deleteReservationsModal.classList.add("hidden");
     });
 }
@@ -670,6 +831,10 @@ if (confirmDeleteReservations) {
     });
 }
 
+
+
+/* stergere individuala rezervari */
+
 function deleteReservation(id) {
     reservationToDelete = id;
     deleteModal.classList.remove("hidden");
@@ -689,9 +854,12 @@ if (confirmDelete) {
         }
 
         try {
-            const response = await fetch(`/api/reservations/${reservationToDelete}`, {
-                method: "DELETE"
-            });
+            const response = await fetch(
+                `/api/reservations/${reservationToDelete}`,
+                {
+                    method: "DELETE"
+                }
+            );
 
             if (!response.ok) {
                 throw new Error();
@@ -709,12 +877,13 @@ if (confirmDelete) {
     });
 }
 
+
+
+/* meniu */
+
 async function displayMenuItems() {
-
     try {
-
         const response = await fetch("/api/menu");
-
         const items = await response.json();
 
         menuItemsCache = Array.isArray(items)
@@ -722,11 +891,9 @@ async function displayMenuItems() {
             : [];
 
         updateMenuCategoryFilter();
-
         renderMenuItems();
 
     } catch (error) {
-
         console.error(error);
 
         menuItemsTable.innerHTML = `
@@ -738,7 +905,6 @@ async function displayMenuItems() {
 }
 
 function renderMenuItems() {
-
     let items = [...menuItemsCache];
 
     const searchValue = menuSearchInput
@@ -764,7 +930,6 @@ function renderMenuItems() {
     }
 
     if (!Array.isArray(items) || items.length === 0) {
-
         menuItemsTable.innerHTML = `
             <p class="empty-message">
                 Nu există preparate pentru filtrul selectat.
@@ -789,7 +954,6 @@ function renderMenuItems() {
     `;
 
     items.forEach(item => {
-
         const safeCategory =
             String(item.category).replace(/'/g, "\\'");
 
@@ -834,13 +998,17 @@ function renderMenuItems() {
     menuItemsTable.innerHTML = html;
 }
 
-function updateMenuCategoryFilter() {
 
+
+/* meniu filtre pe categorii */
+
+function updateMenuCategoryFilter() {
     if (!menuCategoryFilter) {
         return;
     }
 
-    const currentValue = menuCategoryFilter.value || "all";
+    const currentValue =
+        menuCategoryFilter.value || "all";
 
     const categoryCounts = {};
 
@@ -856,9 +1024,10 @@ function updateMenuCategoryFilter() {
         "Vinuri"
     ];
 
-    const extraCategories = Object.keys(categoryCounts)
-        .filter(category => !orderedCategories.includes(category))
-        .sort();
+    const extraCategories =
+        Object.keys(categoryCounts)
+            .filter(category => !orderedCategories.includes(category))
+            .sort();
 
     const allCategories = [
         ...orderedCategories.filter(category => categoryCounts[category]),
@@ -880,24 +1049,35 @@ function updateMenuCategoryFilter() {
     });
 
     menuCategoryFilter.innerHTML = html;
-
     menuCategoryFilter.value = currentValue;
 }
 
+
+
+/* event filtre meniu */
+
 if (menuSearchInput) {
-    menuSearchInput.addEventListener("input", renderMenuItems);
+    menuSearchInput.addEventListener(
+        "input",
+        renderMenuItems
+    );
 }
 
 if (menuCategoryFilter) {
-    menuCategoryFilter.addEventListener("change", renderMenuItems);
+    menuCategoryFilter.addEventListener(
+        "change",
+        renderMenuItems
+    );
 }
 
-if (menuItemForm) {
 
+
+/* adaugare si ediare preparat meniu */
+
+if (menuItemForm) {
     menuItemForm.addEventListener(
         "submit",
         async function(event) {
-
             event.preventDefault();
 
             const formData =
@@ -918,7 +1098,6 @@ if (menuItemForm) {
             };
 
             try {
-
                 const url = menuItemToEdit
                     ? `/api/menu/${menuItemToEdit}`
                     : "/api/menu";
@@ -929,7 +1108,6 @@ if (menuItemForm) {
 
                 const response =
                     await fetch(url, {
-
                         method,
 
                         headers: {
@@ -965,7 +1143,6 @@ if (menuItemForm) {
                 );
 
             } catch (error) {
-
                 console.error(error);
 
                 alert(
@@ -975,6 +1152,8 @@ if (menuItemForm) {
         }
     );
 }
+
+
 
 function editMenuItem(id, category, name, description, price) {
     menuItemToEdit = id;
@@ -1006,6 +1185,10 @@ if (cancelMenuEdit) {
     });
 }
 
+
+
+/* stergere preparat meniu */
+
 function deleteMenuItem(id) {
     menuItemToDelete = id;
     deleteMenuModal.classList.remove("hidden");
@@ -1025,9 +1208,12 @@ if (confirmMenuDelete) {
         }
 
         try {
-            const response = await fetch(`/api/menu/${menuItemToDelete}`, {
-                method: "DELETE"
-            });
+            const response = await fetch(
+                `/api/menu/${menuItemToDelete}`,
+                {
+                    method: "DELETE"
+                }
+            );
 
             if (!response.ok) {
                 throw new Error();
@@ -1045,10 +1231,16 @@ if (confirmMenuDelete) {
     });
 }
 
+
+
+/* calendar admin - functii de ajutor */
+
 function formatAdminDateForInput(date) {
     const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
+    const month =
+        String(date.getMonth() + 1).padStart(2, "0");
+    const day =
+        String(date.getDate()).padStart(2, "0");
 
     return `${year}-${month}-${day}`;
 }
@@ -1076,6 +1268,10 @@ const adminMonthNames = [
     "Decembrie"
 ];
 
+
+
+/* selectare data calendar admin */
+
 function renderAdminCalendar() {
     if (!adminDateCalendarDays || !adminCurrentMonthLabel) {
         return;
@@ -1084,7 +1280,8 @@ function renderAdminCalendar() {
     const year = adminCalendarDate.getFullYear();
     const month = adminCalendarDate.getMonth();
 
-    adminCurrentMonthLabel.textContent = `${adminMonthNames[month]} ${year}`;
+    adminCurrentMonthLabel.textContent =
+        `${adminMonthNames[month]} ${year}`;
 
     adminDateCalendarDays.innerHTML = "";
 
@@ -1099,6 +1296,7 @@ function renderAdminCalendar() {
 
     for (let i = 1; i < startDay; i++) {
         const emptyCell = document.createElement("span");
+
         emptyCell.classList.add("empty-day");
         adminDateCalendarDays.appendChild(emptyCell);
     }
@@ -1111,17 +1309,24 @@ function renderAdminCalendar() {
         button.textContent = day;
         button.dataset.date = formatAdminDateForInput(date);
 
-        if (reservationDateFilter && reservationDateFilter.value === button.dataset.date) {
+        if (
+            reservationDateFilter &&
+            reservationDateFilter.value === button.dataset.date
+        ) {
             button.classList.add("active");
         }
 
         button.addEventListener("click", function() {
             reservationDateFilter.value = button.dataset.date;
-            adminDateDropdownToggle.textContent = formatAdminDateForDisplay(date);
 
-            adminDateCalendarDays.querySelectorAll("button").forEach(btn => {
-                btn.classList.remove("active");
-            });
+            adminDateDropdownToggle.textContent =
+                formatAdminDateForDisplay(date);
+
+            adminDateCalendarDays
+                .querySelectorAll("button")
+                .forEach(btn => {
+                    btn.classList.remove("active");
+                });
 
             button.classList.add("active");
             adminDateDropdownMenu.classList.add("hidden");
@@ -1132,6 +1337,10 @@ function renderAdminCalendar() {
         adminDateCalendarDays.appendChild(button);
     }
 }
+
+
+
+/* event calendar admin */
 
 if (
     reservationDateFilter &&
@@ -1200,5 +1409,9 @@ if (
         }
     });
 }
+
+
+
+/* actualizare automata rezervari */
 
 setInterval(displayReservations, 3000);
