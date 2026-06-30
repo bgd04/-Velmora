@@ -6,142 +6,70 @@ const RESTAURANT_CAPACITY = 40;
 
 /* constante login */
 
-const adminLoginSection =
-    document.getElementById("adminLoginSection");
-
-const adminPanel =
-    document.getElementById("adminPanel");
-
-const adminLoginForm =
-    document.getElementById("adminLoginForm");
-
-const loginError =
-    document.getElementById("loginError");
-
-const logoutAdmin =
-    document.getElementById("logoutAdmin");
+const adminLoginSection = document.getElementById("adminLoginSection");
+const adminPanel = document.getElementById("adminPanel");
+const adminLoginForm = document.getElementById("adminLoginForm");
+const loginError = document.getElementById("loginError");
+const logoutAdmin = document.getElementById("logoutAdmin");
 
 
 
 /* constarnte stats admin */
 
-const todayReservationsCount =
-    document.getElementById("todayReservationsCount");
-
-const pendingReservationsCount =
-    document.getElementById("pendingReservationsCount");
-
-const eveningSeatsCount =
-    document.getElementById("eveningSeatsCount");
+const todayReservationsCount = document.getElementById("todayReservationsCount");
+const pendingReservationsCount = document.getElementById("pendingReservationsCount");
+const eveningSeatsCount = document.getElementById("eveningSeatsCount");
 
 
 
 /* constante rezervari */
 
-const reservationsTable =
-    document.getElementById("reservationsTable");
-
-const clearReservations =
-    document.getElementById("clearReservations");
-
-const reservationSearchInput =
-    document.getElementById("reservationSearchInput");
-
-const reservationStatusFilter =
-    document.getElementById("reservationStatusFilter");
-
-const reservationDateFilter =
-    document.getElementById("reservationDateFilter");
+const reservationsTable = document.getElementById("reservationsTable");
+const clearReservations = document.getElementById("clearReservations");
+const reservationSearchInput = document.getElementById("reservationSearchInput");
+const reservationStatusFilter = document.getElementById("reservationStatusFilter");
+const reservationDateFilter = document.getElementById("reservationDateFilter");
 
 
 
 /* constante calendar admin */
 
-const adminDateDropdown =
-    document.getElementById("adminDateDropdown");
-
-const adminDateDropdownToggle =
-    document.getElementById("adminDateDropdownToggle");
-
-const adminDateDropdownMenu =
-    document.getElementById("adminDateDropdownMenu");
-
-const adminCurrentMonthLabel =
-    document.getElementById("adminCurrentMonthLabel");
-
-const adminDateCalendarDays =
-    document.getElementById("adminDateCalendarDays");
-
-const adminPrevMonth =
-    document.getElementById("adminPrevMonth");
-
-const adminNextMonth =
-    document.getElementById("adminNextMonth");
-
-const adminClearDate =
-    document.getElementById("adminClearDate");
-
-const adminTodayDate =
-    document.getElementById("adminTodayDate");
+const adminDateDropdown = document.getElementById("adminDateDropdown");
+const adminDateDropdownToggle = document.getElementById("adminDateDropdownToggle");
+const adminDateDropdownMenu = document.getElementById("adminDateDropdownMenu");
+const adminCurrentMonthLabel = document.getElementById("adminCurrentMonthLabel");
+const adminDateCalendarDays = document.getElementById("adminDateCalendarDays");
+const adminPrevMonth = document.getElementById("adminPrevMonth");
+const adminNextMonth = document.getElementById("adminNextMonth");
+const adminClearDate = document.getElementById("adminClearDate");
+const adminTodayDate = document.getElementById("adminTodayDate");
 
 
 
 /* constante meniu admin */
 
-const menuItemForm =
-    document.getElementById("menuItemForm");
-
-const menuItemsTable =
-    document.getElementById("menuItemsTable");
-
-const menuSubmitButton =
-    document.getElementById("menuSubmitButton");
-
-const cancelMenuEdit =
-    document.getElementById("cancelMenuEdit");
-
-const menuSearchInput =
-    document.getElementById("menuSearchInput");
-
-const menuCategoryFilter =
-    document.getElementById("menuCategoryFilter");
-
-const menuFeedback =
-    document.getElementById("menuFeedback");
+const menuItemForm = document.getElementById("menuItemForm");
+const menuItemsTable = document.getElementById("menuItemsTable");
+const menuSubmitButton = document.getElementById("menuSubmitButton");
+const cancelMenuEdit = document.getElementById("cancelMenuEdit");
+const menuSearchInput = document.getElementById("menuSearchInput");
+const menuCategoryFilter = document.getElementById("menuCategoryFilter");
+const menuFeedback = document.getElementById("menuFeedback");
 
 
 
 /* constante actiuni */
 
-const deleteModal =
-    document.getElementById("deleteModal");
-
-const cancelDelete =
-    document.getElementById("cancelDelete");
-
-const confirmDelete =
-    document.getElementById("confirmDelete");
-
-const deleteMenuModal =
-    document.getElementById("deleteMenuModal");
-
-const cancelMenuDelete =
-    document.getElementById("cancelMenuDelete");
-
-const confirmMenuDelete =
-    document.getElementById("confirmMenuDelete");
-
-const deleteReservationsModal =
-    document.getElementById("deleteReservationsModal");
-
-const cancelDeleteReservations =
-    document.getElementById("cancelDeleteReservations");
-
-const confirmDeleteReservations =
-    document.getElementById("confirmDeleteReservations");
-
-const deleteReservationsMessage =
-    document.getElementById("deleteReservationsMessage");
+const deleteModal = document.getElementById("deleteModal");
+const cancelDelete = document.getElementById("cancelDelete");
+const confirmDelete = document.getElementById("confirmDelete");
+const deleteMenuModal = document.getElementById("deleteMenuModal");
+const cancelMenuDelete = document.getElementById("cancelMenuDelete");
+const confirmMenuDelete = document.getElementById("confirmMenuDelete");
+const deleteReservationsModal = document.getElementById("deleteReservationsModal");
+const cancelDeleteReservations = document.getElementById("cancelDeleteReservations");
+const confirmDeleteReservations = document.getElementById("confirmDeleteReservations");
+const deleteReservationsMessage = document.getElementById("deleteReservationsMessage");
 
 
 
